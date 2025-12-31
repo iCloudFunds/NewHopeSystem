@@ -20,17 +20,18 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
-    'daphne',  # Real-time engine must be at the top
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
-    'backend.core.apps.CoreConfig', # Keep 'backend' here if your app folder is still named backend
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'channels',    # Added for Chat
+    'channels',
+    'core',         # Change this from 'backend.core.apps.CoreConfig' to just 'core'
     'departments',
+    'portal',       # Add this if it's missing, as I saw a 'portal' folder in your DIR
 ]
 
 MIDDLEWARE = [
