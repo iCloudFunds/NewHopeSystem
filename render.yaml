@@ -5,9 +5,8 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       python manage.py migrate
-      python manage.py initdata
       python manage.py collectstatic --no-input
-    startCommand: gunicorn backend.wsgi:application
+    startCommand: daphne school_management.asgi:application --port $PORT --bind 0.0.0.0
     envVars:
       - key: DATABASE_URL
         fromDatabase:
