@@ -29,10 +29,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'channels',
-    'core',         # Change this from 'backend.core.apps.CoreConfig' to just 'core'
+    'core',
     'departments',
-    'portal',       # Add this if it's missing, as I saw a 'portal' folder in your DIR
+    'portal',
 ]
+
+# This MUST be outside the INSTALLED_APPS list
+AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -43,11 +46,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Updated to point to your backend app's middleware
     'backend.middleware.MaintenanceModeMiddleware', 
 ]
 
-# Updated to use school_management
 ROOT_URLCONF = 'school_management.urls'
 
 TEMPLATES = [
@@ -65,7 +66,6 @@ TEMPLATES = [
     },
 ]
 
-# Updated to use school_management
 WSGI_APPLICATION = 'school_management.wsgi.application'
 ASGI_APPLICATION = 'school_management.asgi.application'
 
@@ -99,8 +99,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Pointing to core static folder
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'backend/core/static'),
+    os.path.join(BASE_DIR, 'core/static'),
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
