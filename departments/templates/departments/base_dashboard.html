@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}New Hope System - Dashboard{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Bootstrap for dashboard components -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Dashboard-specific styles that won't conflict with main style.css */
+        :root {
+            --dashboard-sidebar-width: 280px;
+            --dashboard-header-height: 70px;
+        }
+        
+        .dashboard-body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--gray-light);
+        }
+        
+        .dashboard-sidebar {
+            width: var(--dashboard-sidebar-width);
+            background: linear-gradient(135deg, var(--thick-blue) 0%, var(--black) 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            border-right: 4px solid var(--rising-sun);
+        }
+        
+        .dashboard-main {
+            flex: 1;
+            margin-left: var(--dashboard-sidebar-width);
+            min-height: 100vh;
+        }
+        
+        .dashboard-header {
+            background: var(--white);
+            height: var(--dashboard-header-height);
+            border-bottom: 3px solid var(--rising-sun);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        
+        .dashboard-content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* Sidebar content */
+        .sidebar-brand {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-logo {
+            height: 50px;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-brand h3 {
+            color: var(--rising-sun);
+            font-size: 22px;
+            margin: 0;
+        }
+        
+        .sidebar-brand p {
+            color: var(--gray-light);
+            font-size: 12px;
+            margin: 5px 0 0 0;
+        }
+        
+        .nav-section {
+            padding: 0 15px;
+            margin-bottom: 30px;
+        }
+        
+        .nav-section-title {
+            color: var(--rising-sun-light);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 140, 0, 0.2);
+            color: var(--rising-sun-light);
+        }
+        
+        .nav-item.active {
+            background-color: var(--rising-sun);
+            color: var(--black);
+            font-weight: bold;
+        }
+        
+        .nav-icon {
+            width: 25px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            flex: 1;
+        }
+        
+        .nav-badge {
+            background-color: var(--rising-sun-dark);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        /* Dashboard stats cards */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--rising-sun);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .stat-icon.primary {
+            background-color: rgba(30, 58, 138, 0.1);
+            color: var(--thick-blue);
+        }
+        
+        .stat-icon.success {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+        
+        .stat-icon.warning {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--rising-sun-dark);
+        }
+        
+        .stat-icon.info {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--blue-light);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--thick-blue);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: var(--gray-dark);
+            font-size: 14px;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .stat-change.positive {
+            color: #27ae60;
+        }
+        
+        .stat-change.negative {
+            color: #e74c3c;
+        }
+        
+        /* Dashboard tables */
+        .dashboard-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, var(--thick-blue) 0%, var(--blue-light) 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        /* User profile in header */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--rising-sun);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            color: var(--thick-blue);
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: var(--rising-sun);
+            background-color: rgba(255, 140, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--thick-blue);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .dashboard-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .dashboard-main {
+                margin-left: 0;
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .stat-cards {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stat-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-content {
+                padding: 15px;
+            }
+            
+            .dashboard-header {
+                padding: 0 15px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dashboard-body">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="New Hope System Logo" class="sidebar-logo">
+            <h3>New Hope System</h3>
+            <p>Dashboard Portal</p>
+        </div>
+        
+        <!-- User Info -->
+        <div class="nav-section">
+            <div class="user-profile" style="padding: 0 15px;">
+                <div class="user-avatar">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-role">{{ user_profile.role|default:"User" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="nav-sections">
+            {% block sidebar_nav %}
+            <!-- Role-specific navigation will be inserted here -->
+            {% endblock %}
+        </nav>
+        
+        <!-- System Links -->
+        <div class="nav-section">
+            <div class="nav-section-title">System</div>
+            <a href="{% url 'home' %}" class="nav-item">
+                <i class="nav-icon fas fa-home"></i>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="nav-icon fas fa-cog"></i>
+                <span class="nav-text">Settings</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="nav-icon fas fa-question-circle"></i>
+                <span class="nav-text">Help</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-item">
+                <i class="nav-icon fas fa-sign-out-alt"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div>
+                <h2 class="page-title mb-0">{% block page_title %}Dashboard{% endblock %}</h2>
+                <p class="mb-0 text-muted" style="font-size: 14px;">
+                    {% block page_subtitle %}Welcome to your dashboard{% endblock %}
+                </p>
+            </div>
+            
+            <div class="user-profile">
+                <div class="user-info text-end">
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-role">{{ user_profile.role|default:"User" }}</div>
+                </div>
+                <div class="user-avatar">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="dashboard-content">
+            <!-- Alerts/Notifications -->
+            {% if messages %}
+            <div class="alerts-container mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Dashboard Content -->
+            {% block dashboard_content %}
+            <!-- Role-specific content will be inserted here -->
+            {% endblock %}
+        </div>
+    </main>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const isMobile = window.innerWidth <= 1024;
+            
+            if (isMobile && 
+                !sidebar.contains(event.target) && 
+                !toggleBtn.contains(event.target) &&
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Set active nav item
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+            });
+        });
+        
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - View Only</title>
+    <style>
+        :root {
+            --rising-sun: #ff8c00;
+            --void-black: #000000;
+            --dark-surface: #1a1a1a;
+            --text-bright: #ffffff;
+            --danger: #ff4444;
+            --success: #27ae60;
+        }
+
+        /* Prevent text selection and highlight */
+        body {
+            background-color: var(--void-black);
+            color: var(--text-bright);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            user-select: none; /* Block text selection */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* Watermark to discourage screenshots */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 999;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--rising-sun);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 { color: var(--rising-sun); margin: 0; }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--dark-surface);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid var(--rising-sun);
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--rising-sun); padding: 10px; border-bottom: 1px solid #333; }
+        td { padding: 10px; border-bottom: 1px solid #222; font-size: 0.9rem; }
+
+        .btn-logout {
+            border: 1px solid var(--rising-sun);
+            color: var(--rising-sun);
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        /* Print Security: Hide everything if they try to print */
+        @media print {
+            body { display: none !important; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;"> <div class="watermark">OFFICIAL VIEW ONLY - NO COPY</div>
+
+<div class="header">
+    <div>
+        <h1>{{ student.full_name }}</h1>
+        <small>PORTAL VIEW: VIEW-ONLY MODE ENABLED</small>
+    </div>
+    <a href="{% url 'parent_login' %}" class="btn-logout">Exit Portal</a>
+</div>
+
+<div class="grid-container">
+    <div class="card">
+        <h3>💳 Current Balance</h3>
+        <div style="font-size: 2rem; color: var(--danger);">{{ balance }} FCFA</div>
+    </div>
+
+    <div class="card">
+        <h3>🚩 Conduct Score</h3>
+        <div style="font-size: 2rem; color: var(--rising-sun);">{{ conduct_points }}/100</div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h3>📜 Conduct History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Incident</th>
+                <th>Severity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in discipline_records %}
+            <tr>
+                <td>{{ record.incident_date|date:"d M Y" }}</td>
+                <td>{{ record.reason }}</td>
+                <td>{{ record.severity }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">No records found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // 1. Disable F12 (DevTools) and Ctrl+Shift+I / Ctrl+U (View Source)
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || 
+            (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) ||
+            (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) || // Disable Save
+            (e.ctrlKey && e.keyCode == 'P'.charCodeAt(0))) { // Disable Print
+            return false;
+        }
+    };
+
+    // 2. Clear clipboard if they manage to copy anything
+    document.addEventListener('copy', (e) => {
+        e.preventDefault();
+        alert("Copying is disabled on this portal.");
+    });
+
+    // 3. Simple Anti-Screenshot: Detect when the window loses focus (like hitting PrintScreen)
+    window.addEventListener('blur', () => {
+        document.body.style.filter =
+// Auto-logout visual warning (client-side)
+let inactivityTime = function () {
+    let time;
+    // Reset timer on any movement or click
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+
+    function logout() {
+        alert("Your session has expired due to 10 minutes of inactivity.");
+        window.location.href = "{% url 'parent_login' %}";
+    }
+
+    function resetTimer() {
+        clearTimeout(time);
+        time = setTimeout(logout, 600000); // 600,000 ms = 10 minutes
+    }
+};
+inactivityTime();

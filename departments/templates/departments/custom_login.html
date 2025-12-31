@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Login - Role Selection{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-container">
+        <h2 class="card-header">Staff Login with Role Selection</h2>
+        
+        {% if form.errors %}
+            <div class="alert alert-error">
+                Please correct the errors below.
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="post" class="login-form" style="max-width: 500px; margin: 0 auto;">
+            {% csrf_token %}
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="id_username" style="display: block; margin-bottom: 5px; font-weight: bold;">Username:</label>
+                <input type="text" name="username" id="id_username" required autofocus 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="id_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Password:</label>
+                <input type="password" name="password" id="id_password" required 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="id_role" style="display: block; margin-bottom: 5px; font-weight: bold;">Role:</label>
+                <select name="role" id="id_role" required 
+                        style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;"
+                        onchange="toggleFields()">
+                    <option value="">Select Role</option>
+                    <option value="Principal">Principal</option>
+                    <option value="Vice Principal">Vice Principal</option>
+                    <option value="Chief of Works">Chief of Works</option>
+                    <option value="Discipline Master">Discipline Master</option>
+                    <option value="Senior Discipline Master">Senior Discipline Master</option>
+                    <option value="Secretary">Secretary</option>
+                    <option value="Accountant">Accountant</option>
+                </select>
+            </div>
+            
+            <!-- Department Field -->
+            <div class="form-group" id="department-group" style="margin-bottom: 20px; display: none;">
+                <label for="id_department" style="display: block; margin-bottom: 5px; font-weight: bold;">Department:</label>
+                <select name="department" id="id_department" 
+                        style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+                    <option value="">Select Department</option>
+                    {% for dept in form.department.field.queryset %}
+                        <option value="{{ dept.id }}">{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Stream Field (for Vice Principal) -->
+            <div class="form-group" id="stream-group" style="margin-bottom: 20px; display: none;">
+                <label for="id_stream" style="display: block; margin-bottom: 5px; font-weight: bold;">Stream:</label>
+                <select name="stream" id="id_stream" 
+                        style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+                    <option value="">Select Stream</option>
+                    {% for stream in form.stream.field.queryset %}
+                        <option value="{{ stream.id }}">{{ stream.get_name_display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Floor Field (for Discipline Master) -->
+            <div class="form-group" id="floor-group" style="margin-bottom: 20px; display: none;">
+                <label for="id_floor" style="display: block; margin-bottom: 5px; font-weight: bold;">Floor:</label>
+                <select name="floor" id="id_floor" 
+                        style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+                    <option value="">Select Floor</option>
+                    {% for floor in form.floor.field.queryset %}
+                        <option value="{{ floor.id }}">{{ floor.get_name_display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Stream Password Field -->
+            <div class="form-group" id="stream-password-group" style="margin-bottom: 20px; display: none;">
+                <label for="id_stream_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Stream Password:</label>
+                <input type="password" name="stream_password" id="id_stream_password" 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <!-- Department Password Field -->
+            <div class="form-group" id="department-password-group" style="margin-bottom: 20px; display: none;">
+                <label for="id_department_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Department Password:</label>
+                <input type="password" name="department_password" id="id_department_password" 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <!-- Floor Password Field -->
+            <div class="form-group" id="floor-password-group" style="margin-bottom: 20px; display: none;">
+                <label for="id_floor_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Floor Password (Optional):</label>
+                <input type="password" name="floor_password" id="id_floor_password" 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 20px;">Login</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleFields() {
+        const role = document.getElementById('id_role').value;
+        
+        // Hide all groups first
+        document.getElementById('department-group').style.display = 'none';
+        document.getElementById('stream-group').style.display = 'none';
+        document.getElementById('floor-group').style.display = 'none';
+        document.getElementById('stream-password-group').style.display = 'none';
+        document.getElementById('department-password-group').style.display = 'none';
+        document.getElementById('floor-password-group').style.display = 'none';
+        
+        // Clear required flags
+        document.getElementById('id_department').required = false;
+        document.getElementById('id_stream').required = false;
+        document.getElementById('id_floor').required = false;
+        document.getElementById('id_stream_password').required = false;
+        document.getElementById('id_department_password').required = false;
+        document.getElementById('id_floor_password').required = false;
+        
+        // Reset all department options to visible
+        const deptSelect = document.getElementById('id_department');
+        for (let i = 0; i < deptSelect.options.length; i++) {
+            deptSelect.options[i].style.display = '';
+        }
+        
+        // Show fields based on role
+        if (role === 'Principal') {
+            // No additional fields for Principal
+        } 
+        else if (role === 'Vice Principal') {
+            document.getElementById('department-group').style.display = 'block';
+            document.getElementById('stream-group').style.display = 'block';
+            document.getElementById('stream-password-group').style.display = 'block';
+            
+            document.getElementById('id_department').required = true;
+            document.getElementById('id_stream').required = true;
+            document.getElementById('id_stream_password').required = true;
+            
+            // Auto-select General department for Vice Principal
+            const generalOption = Array.from(document.getElementById('id_department').options)
+                .find(option => option.text === 'General');
+            if (generalOption) generalOption.selected = true;
+            
+            // Filter for Vice Principal (only General)
+            filterDepartments(['General']);
+        } 
+        else if (role === 'Chief of Works') {
+            document.getElementById('department-group').style.display = 'block';
+            document.getElementById('department-password-group').style.display = 'block';
+            
+            document.getElementById('id_department').required = true;
+            document.getElementById('id_department_password').required = true;
+            
+            // Filter department options for Chief of Works (only Industrial and Commercial)
+            filterDepartments(['Industrial', 'Commercial']);
+        } 
+        else if (role === 'Discipline Master') {
+            document.getElementById('floor-group').style.display = 'block';
+            document.getElementById('floor-password-group').style.display = 'block';
+            
+            document.getElementById('id_floor').required = true;
+            // Floor password is optional
+        } 
+        else if (role === 'Senior Discipline Master') {
+            // No additional fields for Senior Discipline Master at login
+        }
+        else if (role === 'Secretary' || role === 'Accountant') {
+            // No department required at login for Secretary and Accountant
+            // They will choose department on their dashboard
+        }
+    }
+    
+    function filterDepartments(allowedDepartments) {
+        const deptSelect = document.getElementById('id_department');
+        const options = deptSelect.options;
+        
+        // Show all options first
+        for (let i = 0; i < options.length; i++) {
+            options[i].style.display = '';
+        }
+        
+        // Hide options not in allowedDepartments
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            if (option.value !== '' && !allowedDepartments.includes(option.text)) {
+                option.style.display = 'none';
+                // If this option is selected, clear it
+                if (option.selected) {
+                    deptSelect.selectedIndex = 0;
+                }
+            }
+        }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleFields();
+    });
+</script>
+{% endblock %}

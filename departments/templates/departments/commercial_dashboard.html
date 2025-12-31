@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Commercial Department Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to Commercial Department Dashboard</h1>
+    <p>Logged in as: {{ user.username }}</p>
+    <p>Role: {{ profile.role }}</p>
+    <p>Department: {{ profile.department.name }}</p>
+    
+    <h3>Commercial Department Features:</h3>
+    <ul>
+        <li>Business Records</li>
+        <li>Commercial Training</li>
+        <li>Financial Reports</li>
+    </ul>
+    
+    <a href="/logout/">Logout</a>
+</body>
+</html>

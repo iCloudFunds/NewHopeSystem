@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Classes Directory
+        <span class="badge" style="background-color: #FF8C00; color: black; padding: 5px 10px; border-radius: 12px; font-size: 14px;">
+            {{ total_classes }} Classes
+        </span>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <input type="text" id="classSearch" placeholder="Search classes..." style="padding: 8px; width: 300px; border: 2px solid #1E3A8A; border-radius: 4px;">
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+                <a href="/admin/core/class/add/" class="btn btn-primary">Add New Class</a>
+                <a href="/admin/core/class/" class="btn">Manage Classes</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if classes_by_level %}
+    <div class="classes-container">
+        {% for level, classes in classes_by_level.items %}
+        <div class="level-section">
+            <h3 style="color: #1E3A8A; border-bottom: 2px solid #FF8C00; padding-bottom: 8px; margin-bottom: 20px;">
+                {{ level }} Level
+                <span class="level-count">({{ classes|length }} classes)</span>
+            </h3>
+            
+            <div class="classes-grid">
+                {% for class in classes %}
+                <div class="class-card">
+                    <div class="class-card-header">
+                        <h4>{{ class.name }}</h4>
+                        <span class="class-code">{{ class.code|default:"" }}</span>
+                    </div>
+                    
+                    <div class="class-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Department:</span>
+                            <span class="detail-value">
+                                {% if class.department %}
+                                    {{ class.department.name }}
+                                {% else %}
+                                    <span style="color: #999;">General</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Academic Year:</span>
+                            <span class="detail-value">{{ class.academic_year|default:"Not set" }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Class Teacher:</span>
+                            <span class="detail-value">
+                                {% if class.class_teacher %}
+                                    {{ class.class_teacher.first_name }} {{ class.class_teacher.last_name }}
+                                {% else %}
+                                    <span style="color: #999;">Not assigned</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Student Count:</span>
+                            <span class="detail-value">
+                                {% if class.student_count %}
+                                    {{ class.student_count }} students
+                                {% else %}
+                                    <span style="color: #999;">No students</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">Status:</span>
+                            <span class="status-badge active">
+                                Active
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="class-actions">
+                        <a href="/admin/core/class/{{ class.id }}/change/" class="action-btn edit">
+                            ✏️ Edit
+                        </a>
+                        <a href="/admin/core/class/{{ class.id }}/delete/" class="action-btn delete" onclick="return confirm('Are you sure?')">
+                            🗑️ Delete
+                        </a>
+                        {% if class.student_count %}
+                            <a href="/admin/core/student/?current_class__id__exact={{ class.id }}" class="action-btn view">
+                                👥 View Students
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <div class="empty-state">
+        <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 48px; color: #CBD5E1;">🏫</div>
+            <h3>No Classes Found</h3>
+            <p>No classes have been added to the system yet.</p>
+            {% if user.is_authenticated %}
+                <a href="/admin/core/class/add/" class="btn btn-primary">Add Your First Class</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .classes-container {
+        margin-top: 20px;
+    }
+    
+    .level-section {
+        margin-bottom: 40px;
+    }
+    
+    .level-count {
+        font-size: 14px;
+        color: #6B7280;
+        font-weight: normal;
+        margin-left: 10px;
+    }
+    
+    .classes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    
+    .class-card {
+        background-color: white;
+        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .class-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .class-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .class-card-header h4 {
+        margin: 0;
+        color: #1E3A8A;
+        font-size: 18px;
+    }
+    
+    .class-code {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .class-details {
+        margin-bottom: 20px;
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px dotted #E5E7EB;
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .detail-label {
+        color: #6B7280;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        color: #111827;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: right;
+        max-width: 60%;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-badge.active {
+        background-color: #D1FAE5;
+        color: #065F46;
+    }
+    
+    .status-badge.inactive {
+        background-color: #FEE2E2;
+        color: #991B1B;
+    }
+    
+    .class-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        flex: 1;
+        text-align: center;
+    }
+    
+    .action-btn.edit {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+        border: 1px solid #93C5FD;
+    }
+    
+    .action-btn.edit:hover {
+        background-color: #BFDBFE;
+    }
+    
+    .action-btn.delete {
+        background-color: #FEE2E2;
+        color: #DC2626;
+        border: 1px solid #FCA5A5;
+    }
+    
+    .action-btn.delete:hover {
+        background-color: #FECACA;
+    }
+    
+    .action-btn.view {
+        background-color: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #6EE7B7;
+    }
+    
+    .action-btn.view:hover {
+        background-color: #A7F3D0;
+    }
+    
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    
+    .badge {
+        background-color: #FF8C00;
+        color: black;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('classSearch');
+    
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const classCards = document.querySelectorAll('.class-card');
+            
+            classCards.forEach(card => {
+                const cardText = card.textContent.toLowerCase();
+                if (cardText.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Also hide level sections if they have no visible cards
+            const levelSections = document.querySelectorAll('.level-section');
+            levelSections.forEach(section => {
+                const visibleCards = section.querySelectorAll('.class-card[style="display: block"]');
+                const allCards = section.querySelectorAll('.class-card');
+                
+                if (visibleCards.length === 0 && allCards.length > 0) {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = 'block';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

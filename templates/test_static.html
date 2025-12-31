@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Static Files Test - New Hope System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Static Files Test</div>
+    
+    <h3>Logo Test:</h3>
+    <p>If the logo below displays, static files are working:</p>
+    <img src="{% static 'images/logo.png' %}" alt="Test Logo" style="height: 100px; border: 2px solid #FF8C00; padding: 10px;">
+    
+    <h3 style="margin-top: 30px;">CSS Test:</h3>
+    <p>If this text has the theme colors, CSS is working:</p>
+    <div style="padding: 20px; margin: 20px 0; background: linear-gradient(135deg, #FF8C00 0%, #FFA726 100%); color: #000000; border: 3px solid #1E3A8A;">
+        <strong>Rising Sun Orange Background with Black Text and Thick Blue Border</strong>
+    </div>
+    
+    <h3>Quick Links:</h3>
+    <div style="display: flex; gap: 15px; margin: 20px 0;">
+        <a href="/" class="btn">Home</a>
+        <a href="/admin/" class="btn btn-primary">Admin</a>
+        <a href="/contact/" class="btn">Contact</a>
+    </div>
+</div>
+{% endblock %}

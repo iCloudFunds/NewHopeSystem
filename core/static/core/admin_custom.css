@@ -1,0 +1,101 @@
+/* --- GLOBAL THEME RESET & VARIABLES --- */
+:root {
+    --rising-sun: #ff8c00;    /* Deep Orange */
+    --sunlight: #ffcc00;      /* Golden Yellow */
+    --void-black: #000000;    /* Pure Black */
+    --dark-surface: #1a1a1a;  /* Charcoal Dark */
+    --text-bright: #ffffff;   /* Pure White */
+}
+
+/* 1. GLOBAL LAYOUT (Eliminate default Django blue/white) */
+html, body, #container, .login #content, #content-main, #main {
+    background: var(--void-black) !important;
+    color: var(--text-bright) !important;
+}
+
+/* 2. TOP NAVIGATION & HEADER */
+#header, .breadcrumbs, .sticky-wrapper, #branding, .module h2 {
+    background: var(--void-black) !important;
+    border-bottom: 3px solid var(--rising-sun) !important;
+}
+
+#branding h1 a, .breadcrumbs a {
+    color: var(--rising-sun) !important;
+}
+
+/* 3. LOGIN BOX & FORMS */
+.login #content-main {
+    background: var(--dark-surface) !important;
+    border: 2px solid var(--rising-sun) !important;
+    border-radius: 15px;
+    padding: 30px;
+}
+
+/* 4. DATA TABLES (THE "RISING SUN" LIST VIEW) */
+
+/* The Header Row Background */
+#result_list thead th, .results table thead th {
+    background: var(--rising-sun) !important;
+    border-bottom: 2px solid var(--void-black) !important;
+    vertical-align: middle;
+}
+
+/* THE FIX: Force Black text on Username, Role, Staff Status, etc. */
+#result_list thead th div.text a, 
+#result_list thead th div.text span,
+.results table thead th a,
+.results table thead th div.text {
+    color: #000000 !important; /* Pure black for visibility on orange */
+    font-weight: 900 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Change Sort Arrows/Numbers to Black */
+#result_list thead th.sorted .sortoptions a,
+#result_list thead th.sorted .sortpriority {
+    color: #000000 !important;
+}
+
+/* Table Body Rows */
+#result_list tbody tr, .results table tbody tr {
+    background-color: #242424 !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+#result_list tbody tr:hover {
+    background-color: #333333 !important;
+}
+
+/* 5. PERMISSION SELECTOR BOXES (Large & Readable) */
+.selector-available select, .selector-chosen select {
+    height: 400px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    background-color: var(--dark-surface) !important;
+    color: var(--text-bright) !important;
+    border: 2px solid var(--rising-sun) !important;
+}
+
+.selector-available h2, .selector-chosen h2 {
+    background: var(--rising-sun) !important;
+    color: #000 !important;
+}
+
+/* 6. GENERAL LINKS & BUTTONS */
+a:link, a:visited {
+    color: var(--sunlight) !important;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--rising-sun) !important;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input {
+    background: var(--rising-sun) !important;
+    color: #000 !important;
+    font-weight: bold !important;
+    text-transform: uppercase;
+    border: none !important;
+}

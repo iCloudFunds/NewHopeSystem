@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}New Hope System{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        /* 1. The Launcher Bubble (Bottom Right) */
+        .chat-launcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            background: #0084ff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 3000;
+            border: none;
+            transition: transform 0.2s ease;
+        }
+        .chat-launcher:hover { transform: scale(1.1); }
+
+        /* 2. FB Style Docked Window */
+        .fb-chat-container {
+            position: fixed;
+            bottom: 0;
+            right: 90px; 
+            width: 330px;
+            height: 450px;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+            z-index: 2999;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: height 0.3s ease;
+        }
+
+        .fb-chat-container.active { display: flex; }
+
+        .fb-chat-header {
+            padding: 10px 12px;
+            background: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+        }
+
+        .fb-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fb-header-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #050505;
+        }
+
+        .fb-chat-body {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #chatFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #global-unread-count {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 11px;
+            padding: 4px 7px;
+        }
+
+        .toast-container { z-index: 3001; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% if user.is_authenticated %}
+    <button class="chat-launcher shadow-lg" onclick="toggleFbChat()">
+        <i class="bi bi-messenger"></i>
+        <span id="global-unread-count" class="badge bg-danger rounded-circle d-none">0</span>
+    </button>
+
+    <div id="fbChatWindow" class="fb-chat-container">
+        <div class="fb-chat-header" onclick="minimizeFbChat()">
+            <div class="fb-header-info">
+                <div style="width: 30px; height: 30px; background: #0084ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-person-fill" style="color: white; font-size: 0.8rem;"></i>
+                </div>
+                <span class="fb-header-name">Staff Messenger</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-dash-lg" style="cursor: pointer; color: #65676b;"></i>
+                <i class="bi bi-x-lg" style="cursor: pointer; color: #65676b;" onclick="event.stopPropagation(); toggleFbChat();"></i>
+            </div>
+        </div>
+        <div class="fb-chat-body">
+            <iframe src="{% url 'chat_list' %}" id="chatFrame"></iframe>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+        <div id="statusToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <span id="toast-message"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="notification-sound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+    </audio>
+    {% endif %}
+
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-section">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="school-logo">
+                <div class="school-name">New Hope System</div>
+            </div>
+            <div class="contact-header">
+                <div class="contact-item"><span>📞 +237652924816</span></div>
+                <div class="contact-item"><span>💬 +237671322472</span></div>
+            </div>
+        </div>
+    </header>
+    
+    <nav class="main-nav">
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/students/">Students</a></li>
+                <li><a href="/teachers/">Teachers</a></li>
+                <li><a href="/reports/">Reports</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'staff_chat_dashboard' %}"><i class="bi bi-chat-dots"></i> Staff Chat</a></li>
+                {% endif %}
+            </ul>
+            <div class="user-section">
+                {% if user.is_authenticated %}
+                    <span>{{ user.username }}</span>
+                    <a href="/logout/" class="btn btn-sm btn-outline-light">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <main class="main-content">
+        <div class="content-container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // FUNCTION TO HANDLE THE MINI-CHAT OPENING PRIVATE WINDOWS
+        // This is called by the iframe inside the bubble
+        function openPrivateChat(userId, username) {
+            // If we are on the full dashboard, let the dashboard's own script handle it
+            if (typeof window.openPrivateChat === 'function' && window.location.pathname.includes('staff-chat')) {
+                 window.openPrivateChat(userId, username);
+            } else {
+                 // Otherwise, redirect the mini-frame to the private chat
+                 document.getElementById('chatFrame').src = `/chat/private/${userId}/`;
+            }
+        }
+
+        function toggleFbChat() {
+            const chat = document.getElementById('fbChatWindow');
+            const badge = document.getElementById('global-unread-count');
+            
+            if (chat.style.display === 'flex') {
+                chat.style.display = 'none';
+            } else {
+                chat.style.display = 'flex';
+                badge.classList.add('d-none');
+                badge.innerText = "0";
+                // Reset frame to list if it was stuck in a private chat
+                document.getElementById('chatFrame').src = "{% url 'chat_list' %}";
+            }
+        }
+
+        function minimizeFbChat() {
+            const chat = document.getElementById('fbChatWindow');
+            if (chat.style.height === '45px') {
+                chat.style.height = '450px';
+            } else {
+                chat.style.height = '45px';
+            }
+        }
+
+        {% if user.is_authenticated %}
+        const notifyUrl = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
+        const globalSocket = new WebSocket(notifyUrl + window.location.host + '/ws/chat/');
+        const notifyAudio = document.getElementById('notification-sound');
+
+        globalSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const badge = document.getElementById('global-unread-count');
+            const chatWindow = document.getElementById('fbChatWindow');
+
+            if (data.type === 'private_message') {
+                if (chatWindow.style.display !== 'flex' || chatWindow.style.height === '45px') {
+                    badge.classList.remove('d-none');
+                    let count = parseInt(badge.innerText);
+                    badge.innerText = count + 1;
+                    notifyAudio.play().catch(e => {});
+                }
+            }
+
+            if (data.type === 'user_status_update' && data.status === 'online') {
+                document.getElementById('toast-message').innerText = data.username + " is now online";
+                new bootstrap.Toast(document.getElementById('statusToast')).show();
+            }
+        };
+        {% endif %}
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

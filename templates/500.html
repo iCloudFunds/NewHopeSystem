@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - New Hope System{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 40px 20px;">
+    <div class="card-header" style="font-size: 36px; color: #FF8C00;">500</div>
+    <h1 style="margin: 20px 0; color: #1E3A8A;">Server Error</h1>
+    <p style="font-size: 18px; margin-bottom: 30px;">
+        We're experiencing technical difficulties. Our team has been notified and is working to fix the issue.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 30px; color: #666;">
+        Please try again in a few minutes. If the problem persists, contact our support team.
+    </p>
+    <div style="margin-top: 30px;">
+        <a href="/" class="btn btn-primary" style="font-size: 18px; padding: 15px 30px;">Go to Homepage</a>
+    </div>
+    <div style="margin-top: 20px;">
+        <a href="/contact/" class="btn" style="font-size: 16px; padding: 10px 20px;">Contact Support Urgently</a>
+    </div>
+    <div style="margin-top: 40px; padding: 20px; background-color: #FEF2F2; border-radius: 8px; border-left: 4px solid #DC2626;">
+        <p style="color: #DC2626; margin: 0;">
+            <strong>Emergency Contact:</strong> Call +237652924816 or WhatsApp +237671322472
+        </p>
+    </div>
+</div>
+{% endblock %}

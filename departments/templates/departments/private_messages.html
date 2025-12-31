@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background: white; margin: 0; height: 100vh; display: flex; flex-direction: column; font-family: Segoe UI, Roboto, sans-serif; }
+        
+        /* Message Log Area */
+        #chat-log {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #ffffff;
+        }
+
+        /* Message Bubbles */
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 18px; font-size: 0.9rem; line-height: 1.3; word-wrap: break-word; }
+        .sent { align-self: flex-end; background: #0084ff; color: white; }
+        .received { align-self: flex-start; background: #e4e6eb; color: black; }
+        
+        .msg img { max-width: 100%; border-radius: 10px; display: block; margin: 5px 0; }
+
+        /* Facebook-style Input Bar */
+        .input-bar {
+            padding: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+        }
+        
+        .icon-btn { color: #0084ff; cursor: pointer; font-size: 1.2rem; transition: opacity 0.2s; }
+        .icon-btn:hover { opacity: 0.7; }
+        
+        #chat-message-input {
+            border-radius: 20px;
+            background: #f0f2f5;
+            border: none;
+            padding: 8px 15px;
+            flex-grow: 1;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-log">
+        {% for msg in chat_messages %}
+            <div class="msg {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+                {{ msg.content|safe }}
+                {% if msg.file %}
+                    {% if ".jpg" in msg.file.url or ".png" in msg.file.url or ".gif" in msg.file.url %}
+                        <img src="{{ msg.file.url }}">
+                    {% else %}
+                        <a href="{{ msg.file.url }}" target="_blank" style="color:inherit; text-decoration:underline;">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Download File
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="input-bar">
+        <label class="mb-0">
+            <i class="bi bi-image icon-btn"></i>
+            <input type="file" hidden accept="image/*" id="image-upload">
+        </label>
+        
+        <label class="mb-0">
+            <i class="bi bi-paperclip icon-btn"></i>
+            <input type="file" hidden id="file-upload">
+        </label>
+
+        <input id="chat-message-input" type="text" placeholder="Aa" autocomplete="off">
+        
+        <i id="chat-message-submit" class="bi bi-send-fill icon-btn"></i>
+    </div>
+
+<script>
+    const targetUserId = "{{ target_user.id }}";
+    const chatLog = document.getElementById('chat-log');
+    const messageInput = document.getElementById('chat-message-input');
+    const sendButton = document.getElementById('chat-message-submit');
+    const imageUpload = document.getElementById('image-upload');
+    const fileUpload = document.getElementById('file-upload');
+
+    // WebSocket Connection
+    const socketUrl = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
+    const chatSocket = new WebSocket(socketUrl + window.location.host + '/ws/chat/');
+
+    // Auto-scroll to bottom on load
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const isFromMe = data.sender_id == "{{ request.user.id }}";
+        const isFromTarget = data.sender_id == targetUserId;
+
+        if (isFromMe || isFromTarget) {
+            const div = document.createElement('div');
+            div.className = `msg ${isFromMe ? 'sent' : 'received'}`;
+            div.innerHTML = data.message; 
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    };
+
+    function sendMessage() {
+        const message = messageInput.value;
+        if (message.trim() !== "") {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'receiver_id': targetUserId
+            }));
+            messageInput.value = '';
+        }
+    }
+
+    function handleFileUpload(inputElement, type) {
+        const file = inputElement.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append(type, file);
+
+        fetch('/chat/upload/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.url) {
+                let msgContent = "";
+                if (type === 'image') {
+                    msgContent = `<img src="${data.url}">`;
+                } else {
+                    msgContent = `<a href="${data.url}" target="_blank" style="color:inherit; text-decoration:underline;"><i class="bi bi-file-earmark-arrow-down"></i> ${data.name}</a>`;
+                }
+                
+                chatSocket.send(JSON.stringify({
+                    'message': msgContent,
+                    'receiver_id': targetUserId
+                }));
+            }
+        })
+        .catch(error => console.error('Error uploading:', error));
+    }
+
+    sendButton.onclick = sendMessage;
+    messageInput.onkeyup = (e) => { if(e.keyCode === 13) sendMessage(); };
+    imageUpload.onchange = () => handleFileUpload(imageUpload, 'image');
+    fileUpload.onchange = () => handleFileUpload(fileUpload, 'file');
+</script>
+</body>
+</html>

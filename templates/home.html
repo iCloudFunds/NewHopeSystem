@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Home - New Hope System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Welcome to New Hope System</div>
+    <p>Your comprehensive school management solution.</p>
+    <p>Manage students, teachers, classes, and more with ease.</p>
+    
+    <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div class="card">
+            <h3>Student Management</h3>
+            <p>Track student information, attendance, and academic performance.</p>
+            <a href="/admin/core/student/" class="btn">Manage Students</a>
+        </div>
+        
+        <div class="card">
+            <h3>Teacher Management</h3>
+            <p>Manage teacher profiles, assignments, and schedules.</p>
+            <a href="/admin/core/teacher/" class="btn">Manage Teachers</a>
+        </div>
+        
+        <div class="card">
+            <h3>Class Management</h3>
+            <p>Organize classes, subjects, and timetables.</p>
+            <a href="/admin/core/class/" class="btn">Manage Classes</a>
+        </div>
+        
+        <div class="card">
+            <h3>Reports & Analytics</h3>
+            <p>Generate reports and analyze school performance data.</p>
+            <a href="/admin/core/" class="btn">View Reports</a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 30px;">
+    <div class="card-header">Quick Access</div>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+        <a href="/admin/" class="btn btn-primary">Admin Dashboard</a>
+        <a href="/admin/core/student/add/" class="btn">Add New Student</a>
+        <a href="/admin/core/teacher/add/" class="btn">Add New Teacher</a>
+        <a href="/admin/core/class/add/" class="btn">Add New Class</a>
+    </div>
+</div>
+{% endblock %}

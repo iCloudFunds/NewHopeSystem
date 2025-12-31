@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Departments Directory
+        <span class="badge" style="background-color: #FF8C00; color: black; padding: 5px 10px; border-radius: 12px; font-size: 14px;">
+            {{ total_departments }} Departments
+        </span>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <input type="text" id="deptSearch" placeholder="Search departments..." style="padding: 8px; width: 300px; border: 2px solid #1E3A8A; border-radius: 4px;">
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+                <a href="/admin/core/department/add/" class="btn btn-primary">Add New Department</a>
+                <a href="/admin/core/department/" class="btn">Manage Departments</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if departments %}
+    <div class="departments-grid" id="departmentsGrid">
+        {% for department in departments %}
+        <div class="department-card">
+            <div class="department-icon">
+                <div style="font-size: 24px; color: #1E3A8A;">
+                    {% if department.name == "Science" %}
+                        🔬
+                    {% elif department.name == "Arts" %}
+                        🎨
+                    {% elif department.name == "Commercial" %}
+                        💼
+                    {% elif department.name == "General" %}
+                        📚
+                    {% elif department.name == "Industrial" %}
+                        ⚙️
+                    {% else %}
+                        🏛️
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="department-info">
+                <h4>{{ department.name }}</h4>
+                
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if department.teacher_count %}
+                                {{ department.teacher_count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Teachers</div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if department.class_count %}
+                                {{ department.class_count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Classes</div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if department.student_count %}
+                                {{ department.student_count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Students</div>
+                    </div>
+                </div>
+                
+                <div class="department-description">
+                    <p>{{ department.description|default:"No description provided."|truncatechars:100 }}</p>
+                </div>
+                
+                <div class="department-actions">
+                    <a href="/admin/core/department/{{ department.id }}/change/" class="action-btn edit">
+                        ✏️ Edit
+                    </a>
+                    <a href="/admin/core/department/{{ department.id }}/delete/" class="action-btn delete" onclick="return confirm('Are you sure?')">
+                        🗑️ Delete
+                    </a>
+                    <a href="/admin/core/teacher/?department__id__exact={{ department.id }}" class="action-btn view">
+                        👥 View Teachers
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <div class="empty-state">
+        <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 48px; color: #CBD5E1;">🏛️</div>
+            <h3>No Departments Found</h3>
+            <p>No departments have been added to the system yet.</p>
+            {% if user.is_authenticated %}
+                <a href="/admin/core/department/add/" class="btn btn-primary">Add Your First Department</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .departments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .department-card {
+        background-color: white;
+        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .department-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .department-icon {
+        text-align: center;
+        margin-bottom: 15px;
+        padding: 15px;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+    }
+    
+    .department-info h4 {
+        margin: 0 0 15px 0;
+        color: #1E3A8A;
+        font-size: 18px;
+        text-align: center;
+    }
+    
+    .department-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 15px;
+        padding: 15px;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1E3A8A;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #6B7280;
+        margin-top: 5px;
+    }
+    
+    .department-description {
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #F8FAFC;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #4B5563;
+        line-height: 1.5;
+        flex-grow: 1;
+    }
+    
+    .department-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        text-align: center;
+        flex: 1;
+    }
+    
+    .action-btn.edit {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+        border: 1px solid #93C5FD;
+    }
+    
+    .action-btn.edit:hover {
+        background-color: #BFDBFE;
+    }
+    
+    .action-btn.delete {
+        background-color: #FEE2E2;
+        color: #DC2626;
+        border: 1px solid #FCA5A5;
+    }
+    
+    .action-btn.delete:hover {
+        background-color: #FECACA;
+    }
+    
+    .action-btn.view {
+        background-color: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #6EE7B7;
+    }
+    
+    .action-btn.view:hover {
+        background-color: #A7F3D0;
+    }
+    
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    
+    .badge {
+        background-color: #FF8C00;
+        color: black;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('deptSearch');
+    const departmentsGrid = document.getElementById('departmentsGrid');
+    
+    if (searchInput && departmentsGrid) {
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const departmentCards = departmentsGrid.getElementsByClassName('department-card');
+            
+            for (let card of departmentCards) {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

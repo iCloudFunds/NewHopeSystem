@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Teachers Directory
+        <span class="badge" style="background-color: #FF8C00; color: black; padding: 5px 10px; border-radius: 12px; font-size: 14px;">
+            {{ total_teachers }} Teachers
+        </span>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <input type="text" id="teacherSearch" placeholder="Search teachers..." style="padding: 8px; width: 300px; border: 2px solid #1E3A8A; border-radius: 4px;">
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+                <a href="/admin/core/teacher/add/" class="btn btn-primary">Add New Teacher</a>
+                <a href="/admin/core/teacher/" class="btn">Manage Teachers</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if teachers %}
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Teacher ID</th>
+                    <th>Full Name</th>
+                    <th>Gender</th>
+                    <th>Department</th>
+                    <th>Subjects</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="teacherTableBody">
+                {% for teacher in teachers %}
+                <tr>
+                    <td><strong>{{ teacher.teacher_id }}</strong></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 40px; height: 40px; background-color: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                {{ teacher.first_name|first }}{{ teacher.last_name|first }}
+                            </div>
+                            <div>
+                                <strong>{{ teacher.first_name }} {{ teacher.last_name }}</strong>
+                                <div style="font-size: 12px; color: #666;">{{ teacher.email|default:"No email" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ teacher.gender|default:"Not specified" }}</td>
+                    <td>
+                        {% if teacher.department %}
+                            <span class="dept-badge">{{ teacher.department.name }}</span>
+                        {% else %}
+                            <span style="color: #999;">Not assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if teacher.subjects.all %}
+                            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                {% for subject in teacher.subjects.all|slice:":3" %}
+                                    <span class="subject-tag">{{ subject.name }}</span>
+                                {% endfor %}
+                                {% if teacher.subjects.count > 3 %}
+                                    <span class="subject-tag">+{{ teacher.subjects.count|add:"-3" }} more</span>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <span style="color: #999;">No subjects</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge {% if teacher.status == 'Active' %}active{% else %}inactive{% endif %}">
+                            {{ teacher.status|default:"Active" }}
+                        </span>
+                    </td>
+                    <td>{{ teacher.date_joined|date:"M d, Y"|default:"Not specified" }}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <a href="/admin/core/teacher/{{ teacher.id }}/change/" class="action-btn edit" title="Edit">
+                                ✏️ Edit
+                            </a>
+                            <a href="/admin/core/teacher/{{ teacher.id }}/delete/" class="action-btn delete" title="Delete" onclick="return confirm('Are you sure?')">
+                                🗑️ Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if teachers.has_other_pages %}
+    <div class="pagination">
+        <div class="pagination-info">
+            Showing {{ teachers.start_index }} to {{ teachers.end_index }} of {{ total_teachers }} teachers
+        </div>
+        <div class="pagination-links">
+            {% if teachers.has_previous %}
+                <a href="?page=1" class="page-link">« First</a>
+                <a href="?page={{ teachers.previous_page_number }}" class="page-link">‹ Previous</a>
+            {% endif %}
+            
+            {% for num in teachers.paginator.page_range %}
+                {% if teachers.number == num %}
+                    <span class="page-link current">{{ num }}</span>
+                {% elif num > teachers.number|add:'-3' and num < teachers.number|add:'3' %}
+                    <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if teachers.has_next %}
+                <a href="?page={{ teachers.next_page_number }}" class="page-link">Next ›</a>
+                <a href="?page={{ teachers.paginator.num_pages }}" class="page-link">Last »</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="empty-state">
+        <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 48px; color: #CBD5E1;">👨‍🏫</div>
+            <h3>No Teachers Found</h3>
+            <p>No teachers have been added to the system yet.</p>
+            {% if user.is_authenticated %}
+                <a href="/admin/core/teacher/add/" class="btn btn-primary">Add Your First Teacher</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .dept-badge {
+        background-color: #E0E7FF;
+        color: #3730A3;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .subject-tag {
+        background-color: #F3F4F6;
+        color: #4B5563;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 500;
+        border: 1px solid #D1D5DB;
+    }
+    
+    /* Reuse styles from students.html */
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .data-table th {
+        background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+        color: white;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        border: none;
+    }
+    
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #E5E7EB;
+        vertical-align: middle;
+    }
+    
+    .data-table tr:nth-child(even) {
+        background-color: #F8FAFC;
+    }
+    
+    .data-table tr:hover {
+        background-color: #EFF6FF;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-badge.active {
+        background-color: #D1FAE5;
+        color: #065F46;
+    }
+    
+    .status-badge.inactive {
+        background-color: #FEE2E2;
+        color: #991B1B;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn.edit {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+        border: 1px solid #93C5FD;
+    }
+    
+    .action-btn.edit:hover {
+        background-color: #BFDBFE;
+    }
+    
+    .action-btn.delete {
+        background-color: #FEE2E2;
+        color: #DC2626;
+        border: 1px solid #FCA5A5;
+    }
+    
+    .action-btn.delete:hover {
+        background-color: #FECACA;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 15px;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+    }
+    
+    .pagination-info {
+        color: #6B7280;
+        font-size: 14px;
+    }
+    
+    .pagination-links {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .page-link {
+        padding: 8px 12px;
+        background-color: white;
+        border: 1px solid #D1D5DB;
+        border-radius: 4px;
+        color: #374151;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .page-link:hover {
+        background-color: #F3F4F6;
+        border-color: #9CA3AF;
+    }
+    
+    .page-link.current {
+        background-color: #3B82F6;
+        color: white;
+        border-color: #3B82F6;
+    }
+    
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    
+    .badge {
+        background-color: #FF8C00;
+        color: black;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+    
+    /* Search highlight */
+    .highlight {
+        background-color: #FEF3C7;
+        padding: 2px;
+        border-radius: 2px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('teacherSearch');
+    const tableBody = document.getElementById('teacherTableBody');
+    
+    if (searchInput && tableBody) {
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            for (let row of rows) {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    
+                    // Highlight matching text (optional)
+                    if (searchTerm) {
+                        const cells = row.getElementsByTagName('td');
+                        for (let cell of cells) {
+                            const original = cell.innerHTML;
+                            const highlighted = original.replace(
+                                new RegExp(searchTerm, 'gi'),
+                                match => `<span class="highlight">${match}</span>`
+                            );
+                            cell.innerHTML = highlighted;
+                        }
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

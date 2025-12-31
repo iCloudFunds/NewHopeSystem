@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row" style="height: 80vh; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        
+        <div class="col-md-4 col-lg-3 border-end p-0">
+            <div class="p-3 border-bottom bg-light">
+                <h5 class="mb-0">Staff Messages</h5>
+            </div>
+            <iframe src="{% url 'chat_list' %}" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+
+        <div class="col-md-8 col-lg-9 p-0 d-flex flex-column">
+            <div class="p-3 border-bottom bg-light d-flex align-items-center">
+                <h6 class="mb-0" id="chat-with-name">Select a staff member to start chatting</h6>
+            </div>
+            
+            <div id="chat-placeholder" class="flex-grow-1 d-flex align-items-center justify-content-center bg-light">
+                <div class="text-center text-muted">
+                    <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+                    <p>Your messages will appear here</p>
+                </div>
+            </div>
+
+            <iframe id="private-chat-frame" name="private-chat-frame" style="width: 100%; height: 100%; border: none; display: none;"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+    // This function is called by the user list iframe
+    function openPrivateChat(userId, username) {
+        const frame = document.getElementById('private-chat-frame');
+        const placeholder = document.getElementById('chat-placeholder');
+        const header = document.getElementById('chat-with-name');
+
+        // Show the frame, hide the placeholder
+        placeholder.style.display = 'none';
+        frame.style.display = 'block';
+        
+        // Update header and load the chat URL
+        header.innerText = "Chatting with " + username;
+        frame.src = `/chat/private/${userId}/`;
+    }
+</script>
+{% endblock %}

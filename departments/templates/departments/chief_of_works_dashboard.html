@@ -1,0 +1,591 @@
+{% extends 'departments/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Chief of Works Dashboard - New Hope System{% endblock %}
+
+{% block page_title %}Chief of Works Dashboard{% endblock %}
+{% block page_subtitle %}{% if user_profile.department %}{{ user_profile.department.name }} Department{% else %}No Department Assigned{% endif %} - Workshop & Technical Management{% endblock %}
+
+{% block sidebar_nav %}
+<!-- Chief of Works-specific navigation -->
+<div class="nav-section">
+    <div class="nav-section-title">Department Management</div>
+    <a href="{% url 'chief_of_works_dashboard' %}" class="nav-item active">
+        <i class="nav-icon fas fa-tachometer-alt"></i>
+        <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="{% url 'workshop_management' %}" class="nav-item">
+        <i class="nav-icon fas fa-tools"></i>
+        <span class="nav-text">Workshop Management</span>
+    </a>
+    <a href="{% url 'technical_resources' %}" class="nav-item">
+        <i class="nav-icon fas fa-cogs"></i>
+        <span class="nav-text">Technical Resources</span>
+    </a>
+    <a href="{% url 'equipment_inventory' %}" class="nav-item">
+        <i class="nav-icon fas fa-boxes"></i>
+        <span class="nav-text">Equipment Inventory</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Student Supervision</div>
+    <a href="{% url 'workshop_students' %}" class="nav-item">
+        <i class="nav-icon fas fa-user-graduate"></i>
+        <span class="nav-text">Workshop Students</span>
+    </a>
+    <a href="{% url 'practical_sessions' %}" class="nav-item">
+        <i class="nav-icon fas fa-flask"></i>
+        <span class="nav-text">Practical Sessions</span>
+    </a>
+    <a href="{% url 'project_supervision' %}" class="nav-item">
+        <i class="nav-icon fas fa-project-diagram"></i>
+        <span class="nav-text">Project Supervision</span>
+    </a>
+    <a href="{% url 'safety_compliance' %}" class="nav-item">
+        <i class="nav-icon fas fa-shield-alt"></i>
+        <span class="nav-text">Safety Compliance</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Reports</div>
+    <a href="{% url 'department_reports' %}" class="nav-item">
+        <i class="nav-icon fas fa-file-alt"></i>
+        <span class="nav-text">Department Reports</span>
+    </a>
+    <a href="{% url 'inventory_reports' %}" class="nav-item">
+        <i class="nav-icon fas fa-chart-bar"></i>
+        <span class="nav-text">Inventory Reports</span>
+    </a>
+    <a href="{% url 'requisition_requests' %}" class="nav-item">
+        <i class="nav-icon fas fa-clipboard-list"></i>
+        <span class="nav-text">Requisition Requests</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Department Status -->
+{% if not user_profile.department or user_profile.department.name not in ['Industrial', 'Commercial'] %}
+<div class="alert alert-danger mb-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+            <h5 class="mb-1">Department Assignment Required</h5>
+            <p class="mb-0">Chief of Works can only be assigned to Industrial or Commercial department. Please contact the Principal.</p>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Department Information -->
+<div class="alert alert-info mb-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-building fa-2x me-3"></i>
+            <div>
+                <h5 class="mb-1">Department: {{ user_profile.department.name }}</h5>
+                <p class="mb-0">Department Code: {{ user_profile.department.code }} | Department Password: <code>{{ department_password|default:"Not set" }}</code></p>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#departmentModal">
+                <i class="fas fa-cogs me-2"></i>Department Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i class="fas fa-tools"></i>
+        </div>
+        <div class="stat-value">{{ workshop_count|default:"0" }}</div>
+        <div class="stat-label">Active Workshops</div>
+        <div class="stat-change">
+            {% if workshop_change > 0 %}
+            <i class="fas fa-plus text-success"></i> +{{ workshop_change }} this term
+            {% else %}
+            <i class="fas fa-minus"></i> No changes
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="stat-value">{{ student_count|default:"0" }}</div>
+        <div class="stat-label">Technical Students</div>
+        <div class="stat-change">
+            {% if student_change > 0 %}
+            <i class="fas fa-arrow-up text-success"></i> +{{ student_change }}
+            {% elif student_change < 0 %}
+            <i class="fas fa-arrow-down text-danger"></i> {{ student_change }}
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-boxes"></i>
+        </div>
+        <div class="stat-value">{{ equipment_count|default:"0" }}</div>
+        <div class="stat-label">Equipment Items</div>
+        <div class="stat-change">
+            {% if equipment_change > 0 %}
+            <i class="fas fa-plus text-success"></i> +{{ equipment_change }} new
+            {% else %}
+            <i class="fas fa-minus"></i> No changes
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-value">{{ maintenance_count|default:"0" }}</div>
+        <div class="stat-label">Pending Maintenance</div>
+        <div class="stat-change">
+            {% if maintenance_change > 0 %}
+            <i class="fas fa-arrow-up text-danger"></i> +{{ maintenance_change }} urgent
+            {% else %}
+            <i class="fas fa-minus"></i> All clear
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="dashboard-table">
+            <div class="table-header">
+                <h3 class="table-title">Recent Workshop Activities</h3>
+                <a href="{% url 'activity_log' %}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="table-body">
+                <div class="list-group list-group-flush">
+                    {% for activity in recent_activities %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="activity-icon me-3 bg-{{ activity.type }}">
+                                    <i class="fas fa-{{ activity.icon }}"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ activity.title }}</h6>
+                                    <p class="mb-1 text-muted">{{ activity.description }}</p>
+                                    <small class="text-muted">{{ activity.workshop }}</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ activity.time }}</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center py-4">
+                        <i class="fas fa-clipboard-list fa-2x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No recent workshop activities</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="dashboard-table">
+            <div class="table-header">
+                <h3 class="table-title">Quick Actions</h3>
+            </div>
+            <div class="table-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#workshopModal">
+                        <i class="fas fa-plus-circle me-2"></i>Schedule Workshop
+                    </button>
+                    <a href="{% url 'equipment_inventory' %}" class="btn btn-outline-success">
+                        <i class="fas fa-box-open me-2"></i>Check Inventory
+                    </a>
+                    <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#maintenanceModal">
+                        <i class="fas fa-wrench me-2"></i>Log Maintenance
+                    </button>
+                    <a href="{% url 'requisition_requests' %}" class="btn btn-outline-info">
+                        <i class="fas fa-file-signature me-2"></i>Approve Requisitions
+                    </a>
+                </div>
+                
+                <!-- Safety Status -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Safety Status</h6>
+                    <div class="mb-2">
+                        <span class="badge bg-success">Fire Extinguishers: Checked</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-warning">First Aid Kits: Needs Restock</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-danger">Safety Training: Overdue</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equipment Status -->
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Equipment Status Overview</h3>
+        <span class="text-light">Current Inventory: {{ equipment_count|default:"0" }} items</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="display-6 text-success">{{ functional_count|default:"0" }}</div>
+                    <div class="text-muted">Functional</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="display-6 text-warning">{{ maintenance_count|default:"0" }}</div>
+                    <div class="text-muted">Needs Maintenance</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="display-6 text-danger">{{ repair_count|default:"0" }}</div>
+                    <div class="text-muted">Needs Repair</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="display-6 text-info">{{ loaned_count|default:"0" }}</div>
+                    <div class="text-muted">Currently Loaned</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Bars -->
+        <div class="mt-4">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Equipment Utilization</span>
+                    <span>{{ utilization_rate|default:"0" }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" style="width: {{ utilization_rate|default:'0' }}%"></div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Maintenance Compliance</span>
+                    <span>{{ compliance_rate|default:"0" }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-{% if compliance_rate >= 80 %}success{% elif compliance_rate >= 60 %}warning{% else %}danger{% endif %}" 
+                         style="width: {{ compliance_rate|default:'0' }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Department Security -->
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Department Security</h3>
+        <span class="text-light">Department Password: {{ department_password|default:"Not set" }}</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="alert alert-secondary">
+                    <h6><i class="fas fa-key me-2"></i>Department Access Control</h6>
+                    <p class="mb-2">Your department password is required for authentication to access department-specific technical data and workshop schedules.</p>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                        Request Password Change
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="alert alert-light">
+                    <h6><i class="fas fa-shield-alt me-2"></i>Security Status</h6>
+                    <div class="mb-2">
+                        <span class="badge bg-success">Workshops Secured</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-info">Access Logs Active</span>
+                    </div>
+                    <small class="text-muted">Last security audit: {{ last_audit|date:"Y-m-d" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modals -->
+<div class="modal fade" id="departmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Department Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'update_department_settings' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Department</label>
+                        <input type="text" class="form-control" value="{{ user_profile.department.name }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workshopHours" class="form-label">Daily Workshop Hours</label>
+                        <input type="text" class="form-control" id="workshopHours" name="workshop_hours" value="8:00 AM - 4:00 PM">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxStudents" class="form-label">Maximum Students per Workshop</label>
+                        <input type="number" class="form-control" id="maxStudents" name="max_students" value="25" min="1" max="50">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="autoScheduling" name="auto_scheduling" checked>
+                        <label class="form-check-label" for="autoScheduling">
+                            Enable automatic workshop scheduling
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="workshopModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schedule New Workshop</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'schedule_workshop' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="workshopTitle" class="form-label">Workshop Title</label>
+                                <input type="text" class="form-control" id="workshopTitle" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="workshopType" class="form-label">Workshop Type</label>
+                                <select class="form-select" id="workshopType" name="type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="practical">Practical Session</option>
+                                    <option value="training">Training Workshop</option>
+                                    <option value="project">Project Work</option>
+                                    <option value="safety">Safety Training</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="workshopDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="workshopDate" name="date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="workshopTime" class="form-label">Time</label>
+                                <input type="time" class="form-control" id="workshopTime" name="time" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workshopDuration" class="form-label">Duration (hours)</label>
+                        <input type="number" class="form-control" id="workshopDuration" name="duration" min="1" max="8" value="2">
+                    </div>
+                    <div class="mb-3">
+                        <label for="workshopDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="workshopDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="requiredEquipment" class="form-label">Required Equipment</label>
+                        <input type="text" class="form-control" id="requiredEquipment" name="equipment" placeholder="Separate with commas">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Workshop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="passwordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Password Change</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'request_department_password_change' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" value="{{ department_password|default:'Not set' }}" readonly>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Requested New Password</label>
+                        <input type="text" class="form-control" id="newPassword" name="new_password" placeholder="Enter suggested new password (optional)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="passwordReason" class="form-label">Reason for Change</label>
+                        <textarea class="form-control" id="passwordReason" name="reason" rows="3" required></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <small><i class="fas fa-info-circle me-1"></i>Your request will be reviewed by the Principal. You'll receive a notification once it's processed.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle password visibility
+    function togglePassword(button) {
+        const input = button.closest('.input-group').querySelector('input');
+        if (input.type === 'password') {
+            input.type = 'text';
+            button.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        } else {
+            input.type = 'password';
+            button.innerHTML = '<i class="fas fa-eye"></i>';
+        }
+    }
+    
+    // Generate password suggestion
+    function generatePassword() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+        let password = '';
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('newPassword').value = password;
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add password generator button
+        const passwordField = document.getElementById('newPassword');
+        if (passwordField) {
+            const generateBtn = document.createElement('button');
+            generateBtn.type = 'button';
+            generateBtn.className = 'btn btn-outline-secondary btn-sm ms-2';
+            generateBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Generate';
+            generateBtn.title = 'Generate secure password';
+            generateBtn.onclick = generatePassword;
+            passwordField.parentNode.appendChild(generateBtn);
+        }
+        
+        // Set workshop date to today
+        const workshopDate = document.getElementById('workshopDate');
+        if (workshopDate) {
+            const today = new Date().toISOString().split('T')[0];
+            workshopDate.value = today;
+            workshopDate.min = today;
+        }
+        
+        // Set workshop time to next hour
+        const workshopTime = document.getElementById('workshopTime');
+        if (workshopTime) {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            now.setMinutes(0);
+            now.setSeconds(0);
+            workshopTime.value = now.toTimeString().slice(0, 5);
+        }
+        
+        // Equipment suggestion
+        const equipmentField = document.getElementById('requiredEquipment');
+        if (equipmentField) {
+            const suggestions = ['Safety goggles', 'Gloves', 'Measuring tape', 'Power drill', 'Screwdrivers', 'Multimeter'];
+            equipmentField.placeholder += ' e.g. ' + suggestions.join(', ');
+        }
+        
+        // Form validation
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const requiredFields = form.querySelectorAll('[required]');
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('is-invalid');
+                        
+                        if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('invalid-feedback')) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            errorDiv.textContent = 'This field is required.';
+                            field.parentNode.appendChild(errorDiv);
+                        }
+                    } else {
+                        field.classList.remove('is-invalid');
+                        const errorDiv = field.nextElementSibling;
+                        if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+                            errorDiv.remove();
+                        }
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    // Scroll to first error
+                    const firstError = form.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        });
+        
+        // Auto-dismiss alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script>
+{% endblock %}

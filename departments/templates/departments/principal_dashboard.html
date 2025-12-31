@@ -1,0 +1,546 @@
+{% extends 'departments/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Principal Dashboard - New Hope System{% endblock %}
+
+{% block page_title %}Principal Dashboard{% endblock %}
+{% block page_subtitle %}System Setup & Administration{% endblock %}
+
+{% block sidebar_nav %}
+<!-- Principal-specific navigation -->
+<div class="nav-section">
+    <div class="nav-section-title">System Setup</div>
+    <a href="{% url 'principal_dashboard' %}" class="nav-item active">
+        <i class="nav-icon fas fa-tachometer-alt"></i>
+        <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="{% url 'create_user' %}" class="nav-item">
+        <i class="nav-icon fas fa-user-plus"></i>
+        <span class="nav-text">Create Users</span>
+    </a>
+    <a href="{% url 'create_department' %}" class="nav-item">
+        <i class="nav-icon fas fa-building"></i>
+        <span class="nav-text">Create Departments</span>
+    </a>
+    <a href="#" class="nav-item" onclick="showSection('departments-section'); return false;">
+        <i class="nav-icon fas fa-cogs"></i>
+        <span class="nav-text">Manage System</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Quick Access</div>
+    <a href="{% url 'create_user' %}?role=Teacher" class="nav-item">
+        <i class="nav-icon fas fa-chalkboard-teacher"></i>
+        <span class="nav-text">Add Teachers</span>
+    </a>
+    <a href="{% url 'create_class' %}" class="nav-item">
+        <i class="nav-icon fas fa-chalkboard"></i>
+        <span class="nav-text">Create Classes</span>
+    </a>
+    <a href="#" class="nav-item" onclick="showSection('users-section'); return false;">
+        <i class="nav-icon fas fa-database"></i>
+        <span class="nav-text">View All Data</span>
+    </a>
+    <a href="#" class="nav-item" onclick="alert('Reports feature coming soon!'); return false;">
+        <i class="nav-icon fas fa-chart-bar"></i>
+        <span class="nav-text">Reports</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Messages Display -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Welcome Message -->
+<div class="alert alert-primary mb-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-school fa-2x me-3"></i>
+        <div>
+            <h5 class="mb-1">Welcome, {{ user.username }}!</h5>
+            <p class="mb-0">You are logged in as Principal. Manage your school system from here.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+            <a href="#" class="small text-primary" onclick="showSection('users-section'); return false;">View all users →</a>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-value">{{ total_departments }}</div>
+            <div class="stat-label">Departments</div>
+            <a href="#" class="small text-success" onclick="showSection('departments-section'); return false;">View departments →</a>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-chalkboard"></i>
+            </div>
+            <div class="stat-value">{{ total_classes }}</div>
+            <div class="stat-label">Classes</div>
+            <a href="{% url 'create_class' %}" class="small text-warning">Create new class →</a>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stat-value">{{ total_students }}</div>
+            <div class="stat-label">Students</div>
+            <a href="#" class="small text-info" onclick="alert('Student management integration with core app needed.'); return false;">Add students →</a>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="dashboard-table mb-4">
+    <div class="table-header">
+        <h3 class="table-title">System Status</h3>
+        <span class="text-light">Current Configuration</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-6">
+                {% if total_departments == 0 %}
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Initial Setup Required</h5>
+                    <p class="mb-2">No departments have been created yet.</p>
+                    <a href="{% url 'create_initial_departments' %}" class="btn btn-sm btn-warning">Setup Departments</a>
+                </div>
+                {% else %}
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-check-circle me-2"></i>System Configured</h5>
+                    <p class="mb-0">Basic system setup is complete. You can now add users and classes.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>Quick Actions</h5>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <a href="{% url 'create_user' %}" class="btn btn-sm btn-primary">Add User</a>
+                        <a href="{% url 'create_department' %}" class="btn btn-sm btn-success">Add Department</a>
+                        <a href="{% url 'create_class' %}" class="btn btn-sm btn-warning">Create Class</a>
+                        <button class="btn btn-sm btn-info" onclick="alert('System settings will be available in next update.');">
+                            System Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Departments Section -->
+<div id="departments-section" class="dashboard-table mb-4">
+    <div class="table-header">
+        <h3 class="table-title">Departments</h3>
+        <div>
+            <span class="text-light me-3">{{ total_departments }} department{{ total_departments|pluralize }}</span>
+            <a href="{% url 'create_department' %}" class="btn btn-sm btn-success">
+                <i class="fas fa-plus me-1"></i>Add New
+            </a>
+        </div>
+    </div>
+    <div class="table-body p-0">
+        {% if departments %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Department Name</th>
+                        <th>Code</th>
+                        <th>Streams</th>
+                        <th>Users</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in departments %}
+                    <tr>
+                        <td>
+                            <strong>{{ dept.name }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ dept.code }}</span>
+                        </td>
+                        <td>
+                            {% if dept.stream_set.all %}
+                                {% for stream in dept.stream_set.all|slice:":2" %}
+                                    <span class="badge bg-secondary">{{ stream.get_name_display }}</span>
+                                {% endfor %}
+                                {% if dept.stream_set.count > 2 %}
+                                    <span class="badge bg-light text-dark">+{{ dept.stream_set.count|add:"-2" }} more</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">No streams</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% with user_count=dept.userprofile_set.count %}
+                                {% if user_count > 0 %}
+                                    <span class="badge bg-info">{{ user_count }} user{{ user_count|pluralize }}</span>
+                                {% else %}
+                                    <span class="text-muted">No users</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'edit_department' department_id=dept.id %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_department' department_id=dept.id %}" 
+                                   class="btn btn-outline-danger"
+                                   onclick="return confirmDeleteDepartment({{ dept.id }}, '{{ dept.name|escapejs }}', {{ dept.userprofile_set.count }})">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+            <h5>No Departments Yet</h5>
+            <p class="text-muted">Create your first department to get started.</p>
+            <a href="{% url 'create_initial_departments' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Initial Departments
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Users Section -->
+<div id="users-section" class="dashboard-table mb-4">
+    <div class="table-header">
+        <h3 class="table-title">System Users</h3>
+        <div>
+            <span class="text-light me-3">{{ total_users }} user{{ total_users|pluralize }}</span>
+            <a href="{% url 'create_user' %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus me-1"></i>Add New
+            </a>
+        </div>
+    </div>
+    <div class="table-body p-0">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_profile in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user_profile.user.username }}</strong>
+                        </td>
+                        <td>
+                            {{ user_profile.user.first_name }} {{ user_profile.user.last_name }}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if user_profile.role == 'Principal' %}bg-primary
+                                {% elif user_profile.role == 'Vice Principal' %}bg-info
+                                {% elif user_profile.role == 'Chief of Works' %}bg-warning
+                                {% elif user_profile.role == 'Teacher' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ user_profile.role }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user_profile.department %}
+                                <span class="badge bg-light text-dark">{{ user_profile.department.name }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if user_profile.user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if user_profile.user.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'edit_user' user_id=user_profile.user.id %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_user' user_id=user_profile.user.id %}" 
+                                   class="btn btn-outline-danger"
+                                   onclick="return confirmDeleteUser({{ user_profile.user.id }}, '{{ user_profile.user.username|escapejs }}')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                <a href="{% url 'reset_password' user_id=user_profile.user.id %}" 
+                                   class="btn btn-outline-secondary"
+                                   onclick="return confirmResetPassword({{ user_profile.user.id }}, '{{ user_profile.user.username|escapejs }}')">
+                                    <i class="fas fa-key"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5>No Users Yet</h5>
+            <p class="text-muted">Create your first user account to get started.</p>
+            <a href="{% url 'create_user' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Create First User
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="dashboard-table">
+    <div class="table-header">
+        <h3 class="table-title">Recent Activity</h3>
+        <span class="text-light">System Log</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="list-group list-group-flush">
+            <div class="list-group-item d-flex">
+                <div class="me-3">
+                    <i class="fas fa-user-plus text-success"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div>You logged in to the system</div>
+                    <small class="text-muted">Just now</small>
+                </div>
+            </div>
+            {% if total_departments > 0 %}
+            <div class="list-group-item d-flex">
+                <div class="me-3">
+                    <i class="fas fa-building text-primary"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div>{{ total_departments }} department{{ total_departments|pluralize }} configured</div>
+                    <small class="text-muted">System setup</small>
+                </div>
+            </div>
+            {% endif %}
+            {% if total_users > 1 %}
+            <div class="list-group-item d-flex">
+                <div class="me-3">
+                    <i class="fas fa-users text-info"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div>{{ total_users }} user{{ total_users|pluralize }} in system</div>
+                    <small class="text-muted">User management</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide sections
+    function showSection(sectionId) {
+        // Scroll to section
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            // Highlight the section
+            element.style.boxShadow = '0 0 0 3px rgba(255, 140, 0, 0.3)';
+            setTimeout(() => {
+                element.style.boxShadow = 'none';
+            }, 2000);
+        }
+    }
+    
+    // Department functions
+    function confirmDeleteDepartment(deptId, deptName, userCount) {
+        let message = `Are you sure you want to delete department "${deptName}"?`;
+        
+        if (userCount > 0) {
+            message = `Cannot delete "${deptName}" because it has ${userCount} user(s) assigned.\n\nReassign users to other departments first.`;
+            alert(message);
+            return false; // Prevent link from being followed
+        }
+        
+        message += `\n\nThis action cannot be undone.`;
+        
+        return confirm(message); // Return result of confirmation
+    }
+    
+    // User functions
+    function confirmDeleteUser(userId, username) {
+        if (userId === {{ user.id|default:"0" }}) {
+            alert('You cannot delete your own account.');
+            return false;
+        }
+        return confirm(`Are you sure you want to delete user "${username}"?\n\nThis action cannot be undone.`);
+    }
+    
+    function confirmResetPassword(userId, username) {
+        return confirm(`Reset password for "${username}"?\n\nA temporary password will be generated and displayed.`);
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-highlight sections if they have data
+        if ({{ total_departments|default:0 }} > 0) {
+            const deptSection = document.getElementById('departments-section');
+            if (deptSection) {
+                deptSection.style.border = '2px solid rgba(25, 135, 84, 0.2)';
+            }
+        }
+        
+        if ({{ total_users|default:0 }} > 1) {
+            const userSection = document.getElementById('users-section');
+            if (userSection) {
+                userSection.style.border = '2px solid rgba(13, 110, 253, 0.2)';
+            }
+        }
+        
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert:not(.alert-primary)');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+        
+        // Add search functionality to tables
+        const addSearchToTable = (tableId, placeholder) => {
+            const tableSection = document.getElementById(tableId);
+            if (!tableSection) return;
+            
+            const table = tableSection.querySelector('table');
+            if (!table) return;
+            
+            const tableHeader = tableSection.querySelector('.table-header');
+            if (!tableHeader) return;
+            
+            // Create search input
+            const searchDiv = document.createElement('div');
+            searchDiv.className = 'input-group input-group-sm mt-2';
+            searchDiv.style.width = '250px';
+            searchDiv.innerHTML = `
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" placeholder="${placeholder}" id="${tableId}Search">
+            `;
+            
+            tableHeader.appendChild(searchDiv);
+            
+            const searchInput = document.getElementById(`${tableId}Search`);
+            const tableRows = table.querySelectorAll('tbody tr');
+            
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        };
+        
+        // Add search to users and departments tables
+        addSearchToTable('users-section', 'Search users...');
+        addSearchToTable('departments-section', 'Search departments...');
+        
+        // Add CSV export functionality
+        const exportTableToCSV = (tableId, filename) => {
+            const table = document.querySelector(`#${tableId} table`);
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tr');
+            const csv = [];
+            
+            rows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('th, td');
+                
+                cells.forEach(cell => {
+                    // Remove action buttons and icons
+                    if (!cell.querySelector('i.fa-edit, i.fa-trash, i.fa-key')) {
+                        rowData.push(cell.textContent.trim());
+                    }
+                });
+                
+                if (rowData.length > 0) {
+                    csv.push(rowData.join(','));
+                }
+            });
+            
+            const csvString = csv.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        };
+        
+        // Add export buttons
+        const addExportButton = (sectionId, buttonText, filename) => {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            
+            const header = section.querySelector('.table-header');
+            if (!header) return;
+            
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'btn btn-sm btn-outline-light ms-2';
+            exportBtn.innerHTML = `<i class="fas fa-download me-1"></i>${buttonText}`;
+            exportBtn.onclick = () => exportTableToCSV(sectionId, filename);
+            
+            const headerDiv = header.querySelector('div');
+            if (headerDiv) {
+                headerDiv.appendChild(exportBtn);
+            }
+        };
+        
+        addExportButton('users-section', 'Export Users', 'users.csv');
+        addExportButton('departments-section', 'Export Departments', 'departments.csv');
+    });
+</script>
+{% endblock %}

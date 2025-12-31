@@ -1,0 +1,202 @@
+{% extends 'departments/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Vice Principal Dashboard - New Hope System{% endblock %}
+
+{% block page_title %}Vice Principal Dashboard{% endblock %}
+{% block page_subtitle %}{% if user_profile.department %}{{ user_profile.department.name }}{% else %}No Department Assigned{% endif %} - Stream Management{% endblock %}
+
+{% block sidebar_nav %}
+<!-- Vice Principal-specific navigation -->
+<div class="nav-section">
+    <div class="nav-section-title">Stream Management</div>
+    <a href="#dashboard" class="nav-item active">
+        <i class="nav-icon fas fa-tachometer-alt"></i>
+        <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="#students" class="nav-item">
+        <i class="nav-icon fas fa-user-graduate"></i>
+        <span class="nav-text">Student Management</span>
+    </a>
+    <a href="#academic" class="nav-item">
+        <i class="nav-icon fas fa-graduation-cap"></i>
+        <span class="nav-text">Academic Performance</span>
+    </a>
+    <a href="#attendance" class="nav-item">
+        <i class="nav-icon fas fa-clipboard-check"></i>
+        <span class="nav-text">Attendance</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Reports</div>
+    <a href="#reports" class="nav-item">
+        <i class="nav-icon fas fa-file-alt"></i>
+        <span class="nav-text">Stream Reports</span>
+    </a>
+    <a href="#parent" class="nav-item">
+        <i class="nav-icon fas fa-users"></i>
+        <span class="nav-text">Parent Communication</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Department Status -->
+{% if not user_profile.department or user_profile.department.name != 'General' %}
+<div class="alert alert-danger mb-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+            <h5 class="mb-1">Department Assignment Required</h5>
+            <p class="mb-0">You have not been assigned to the General department. Please contact the Principal for department assignment.</p>
+        </div>
+    </div>
+</div>
+{% elif not user_profile.stream %}
+<div class="alert alert-warning mb-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-stream fa-2x me-3"></i>
+        <div>
+            <h5 class="mb-1">Stream Not Assigned</h5>
+            <p class="mb-0">You have been assigned to the General department but no stream has been assigned to you yet. Please contact the Principal to assign you to a stream.</p>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Stream Information -->
+<div class="alert alert-info mb-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-stream fa-2x me-3"></i>
+            <div>
+                <h5 class="mb-1">Stream: {{ user_profile.stream.get_name_display }}</h5>
+                <p class="mb-0">Department: {{ user_profile.department.name }} | Stream Password: <code>{{ stream_password|default:"Not set" }}</code></p>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="requestStreamChange()">
+                <i class="fas fa-exchange-alt me-2"></i>Request Stream Change
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Empty Statistics -->
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">Students in Stream</div>
+        <div class="stat-change">
+            <i class="fas fa-minus"></i> No students assigned
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">Stream Teachers</div>
+        <div class="stat-change">
+            <i class="fas fa-minus"></i> No teachers assigned
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-percentage"></i>
+        </div>
+        <div class="stat-value">0%</div>
+        <div class="stat-label">Attendance Rate</div>
+        <div class="stat-change">
+            <i class="fas fa-minus"></i> No attendance data
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-value">0%</div>
+        <div class="stat-label">Pass Rate</div>
+        <div class="stat-change">
+            <i class="fas fa-minus"></i> No academic data
+        </div>
+    </div>
+</div>
+
+<!-- Empty Stream Dashboard -->
+<div class="dashboard-table">
+    <div class="table-header">
+        <h3 class="table-title">Stream Management - {{ user_profile.stream.get_name_display }}</h3>
+        <span class="text-light">No data available yet</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="alert alert-secondary">
+                    <h5><i class="fas fa-info-circle me-2"></i>Waiting for Data</h5>
+                    <p class="mb-0">Once the Principal assigns students and teachers to your stream, you will be able to:</p>
+                    <ul class="mt-2">
+                        <li>View student academic performance</li>
+                        <li>Monitor attendance records</li>
+                        <li>Generate stream reports</li>
+                        <li>Communicate with parents</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-tasks me-2"></i>Available Actions</h5>
+                    <p class="mb-2">You can perform these actions once data is available:</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" disabled>
+                            <i class="fas fa-chart-bar me-2"></i>View Performance Analytics
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" disabled>
+                            <i class="fas fa-file-export me-2"></i>Generate Stream Report
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" disabled>
+                            <i class="fas fa-envelope me-2"></i>Send Announcement to Parents
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stream Security -->
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Stream Security</h3>
+        <span class="text-light">Stream Password: {{ stream_password|default:"Not set" }}</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="alert alert-secondary">
+            <h6><i class="fas fa-key me-2"></i>Stream Access Control</h6>
+            <p class="mb-2">Your stream password is set by the Principal and is required for authentication to access stream-specific data.</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="changeStreamPassword()">
+                Request Password Change
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function requestStreamChange() {
+        alert('Stream change request sent to Principal.\nThe Principal will review and reassign you to a different stream if needed.');
+    }
+    
+    function changeStreamPassword() {
+        alert('Password change request sent to Principal.\nThe Principal will review and update your stream password.');
+    }
+</script>
+{% endblock %}

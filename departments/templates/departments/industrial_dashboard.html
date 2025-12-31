@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Industrial Department Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to Industrial Department Dashboard</h1>
+    <p>Logged in as: {{ user.username }}</p>
+    <p>Role: {{ profile.role }}</p>
+    <p>Department: {{ profile.department.name }}</p>
+    
+    <h3>Industrial Department Features:</h3>
+    <ul>
+        <li>Workshop Management</li>
+        <li>Industrial Training Records</li>
+        <li>Equipment Inventory</li>
+    </ul>
+    
+    <a href="/logout/">Logout</a>
+</body>
+</html>

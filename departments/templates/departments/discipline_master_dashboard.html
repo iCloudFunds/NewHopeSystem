@@ -1,0 +1,580 @@
+{% extends 'departments/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{% if user_profile.role == 'Senior Discipline Master' %}Senior {% endif %}Discipline Master Dashboard - New Hope System{% endblock %}
+
+{% block page_title %}{% if user_profile.role == 'Senior Discipline Master' %}Senior {% endif %}Discipline Master Dashboard{% endblock %}
+{% block page_subtitle %}{% if user_profile.floor %}{{ user_profile.floor.description }}{% else %}All Floors{% endif %} - Discipline & Behavior Management{% endblock %}
+
+{% block sidebar_nav %}
+<!-- Discipline Master-specific navigation -->
+<div class="nav-section">
+    <div class="nav-section-title">Discipline Management</div>
+    <a href="{% url 'discipline_master_dashboard' %}" class="nav-item active">
+        <i class="nav-icon fas fa-tachometer-alt"></i>
+        <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="{% url 'incident_reports' %}" class="nav-item">
+        <i class="nav-icon fas fa-exclamation-triangle"></i>
+        <span class="nav-text">Incident Reports</span>
+    </a>
+    <a href="{% url 'behavior_tracking' %}" class="nav-item">
+        <i class="nav-icon fas fa-user-check"></i>
+        <span class="nav-text">Behavior Tracking</span>
+    </a>
+    <a href="{% url 'disciplinary_actions' %}" class="nav-item">
+        <i class="nav-icon fas fa-gavel"></i>
+        <span class="nav-text">Disciplinary Actions</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Monitoring</div>
+    <a href="{% url 'attendance_monitoring' %}" class="nav-item">
+        <i class="nav-icon fas fa-clipboard-check"></i>
+        <span class="nav-text">Attendance Monitoring</span>
+    </a>
+    <a href="{% url 'uniform_inspection' %}" class="nav-item">
+        <i class="nav-icon fas fa-tshirt"></i>
+        <span class="nav-text">Uniform Inspection</span>
+    </a>
+    <a href="{% url 'classroom_monitoring' %}" class="nav-item">
+        <i class="nav-icon fas fa-chalkboard"></i>
+        <span class="nav-text">Classroom Monitoring</span>
+    </a>
+    {% if user_profile.role == 'Senior Discipline Master' %}
+    <a href="{% url 'staff_monitoring' %}" class="nav-item">
+        <i class="nav-icon fas fa-user-tie"></i>
+        <span class="nav-text">Staff Monitoring</span>
+    </a>
+    {% endif %}
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Reports & Communication</div>
+    <a href="{% url 'discipline_reports' %}" class="nav-item">
+        <i class="nav-icon fas fa-file-alt"></i>
+        <span class="nav-text">Discipline Reports</span>
+    </a>
+    <a href="{% url 'parent_meetings' %}" class="nav-item">
+        <i class="nav-icon fas fa-users"></i>
+        <span class="nav-text">Parent Meetings</span>
+    </a>
+    <a href="{% url 'positive_behavior' %}" class="nav-item">
+        <i class="nav-icon fas fa-award"></i>
+        <span class="nav-text">Positive Behavior</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Role Information -->
+<div class="alert alert-{% if user_profile.role == 'Senior Discipline Master' %}warning{% else %}info{% endif %} mb-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-{% if user_profile.role == 'Senior Discipline Master' %}user-shield{% else %}user-check{% endif %} fa-2x me-3"></i>
+            <div>
+                <h5 class="mb-1">Role: {{ user_profile.role }}</h5>
+                <p class="mb-0">
+                    {% if user_profile.floor %}
+                        Assigned Floor: {{ user_profile.floor.description }}
+                        {% if floor_password %} | Floor Password: <code>{{ floor_password }}</code>{% endif %}
+                    {% else %}
+                        All Floors - Senior Access
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div>
+            {% if user_profile.role == 'Discipline Master' %}
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#floorModal">
+                <i class="fas fa-exchange-alt me-2"></i>Request Floor Change
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-value">{{ incident_count|default:"0" }}</div>
+        <div class="stat-label">Incidents Today</div>
+        <div class="stat-change">
+            {% if incident_change > 0 %}
+            <i class="fas fa-arrow-up text-danger"></i> +{{ incident_change }}
+            {% elif incident_change < 0 %}
+            <i class="fas fa-arrow-down text-success"></i> {{ incident_change }}
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-user-times"></i>
+        </div>
+        <div class="stat-value">{{ late_count|default:"0" }}</div>
+        <div class="stat-label">Late Arrivals</div>
+        <div class="stat-change">
+            {% if late_change > 0 %}
+            <i class="fas fa-arrow-up text-warning"></i> +{{ late_change }}
+            {% elif late_change < 0 %}
+            <i class="fas fa-arrow-down text-success"></i> {{ late_change }}
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-user-check"></i>
+        </div>
+        <div class="stat-value">{{ compliance_rate|default:"0" }}%</div>
+        <div class="stat-label">Uniform Compliance</div>
+        <div class="stat-change">
+            {% if compliance_change > 0 %}
+            <i class="fas fa-arrow-up text-success"></i> +{{ compliance_change }}%
+            {% elif compliance_change < 0 %}
+            <i class="fas fa-arrow-down text-danger"></i> {{ compliance_change }}%
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i class="fas fa-award"></i>
+        </div>
+        <div class="stat-value">{{ positive_count|default:"0" }}</div>
+        <div class="stat-label">Positive Behaviors</div>
+        <div class="stat-change">
+            {% if positive_change > 0 %}
+            <i class="fas fa-plus text-success"></i> +{{ positive_change }}
+            {% else %}
+            <i class="fas fa-minus"></i> No changes
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Incidents & Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="dashboard-table">
+            <div class="table-header">
+                <h3 class="table-title">Recent Incidents</h3>
+                <a href="{% url 'incident_reports' %}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="table-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Student</th>
+                                <th>Type</th>
+                                <th>Floor</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for incident in recent_incidents %}
+                            <tr>
+                                <td>
+                                    <small>{{ incident.time }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ incident.student }}</strong>
+                                    <br><small class="text-muted">{{ incident.class }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ incident.type_color }}">{{ incident.type }}</span>
+                                </td>
+                                <td>{{ incident.floor }}</td>
+                                <td>
+                                    <span class="badge bg-{{ incident.status_color }}">{{ incident.status }}</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewIncident({{ incident.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                                    <p class="text-muted mb-0">No incidents reported today</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="dashboard-table">
+            <div class="table-header">
+                <h3 class="table-title">Quick Actions</h3>
+            </div>
+            <div class="table-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#incidentModal">
+                        <i class="fas fa-exclamation-circle me-2"></i>Report Incident
+                    </button>
+                    <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#lateModal">
+                        <i class="fas fa-clock me-2"></i>Log Late Arrival
+                    </button>
+                    <a href="{% url 'uniform_inspection' %}" class="btn btn-outline-info">
+                        <i class="fas fa-tshirt me-2"></i>Conduct Inspection
+                    </a>
+                    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#positiveModal">
+                        <i class="fas fa-award me-2"></i>Record Positive Behavior
+                    </button>
+                </div>
+                
+                <!-- Floor Status -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="mb-3"><i class="fas fa-building me-2"></i>Floor Status</h6>
+                    {% for floor in floor_status %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ floor.name }}</span>
+                        <span class="badge bg-{{ floor.status_color }}">{{ floor.status }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small">No floor assignments</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Behavior Trends -->
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Behavior Trends</h3>
+        <span class="text-light">This Week's Analysis</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mb-3">Incidents by Type</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Disruptive Behavior</span>
+                        <span>45%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Uniform Violation</span>
+                        <span>25%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: 25%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Late Arrival</span>
+                        <span>20%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: 20%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Other</span>
+                        <span>10%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-secondary" style="width: 10%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-3">Time of Day Analysis</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Morning (8:00-10:00)</span>
+                        <span>30%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: 30%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Midday (10:00-12:00)</span>
+                        <span>40%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: 40%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Afternoon (12:00-2:00)</span>
+                        <span>20%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: 20%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Late Afternoon (2:00-4:00)</span>
+                        <span>10%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: 10%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Senior Discipline Master Extra Features -->
+{% if user_profile.role == 'Senior Discipline Master' %}
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Senior Discipline Master Tools</h3>
+        <span class="text-light">Additional Privileges</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                        <h5>Staff Monitoring</h5>
+                        <p class="text-muted">Monitor staff punctuality and professional conduct</p>
+                        <a href="{% url 'staff_monitoring' %}" class="btn btn-outline-primary">Access</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-contract fa-3x text-warning mb-3"></i>
+                        <h5>Policy Management</h5>
+                        <p class="text-muted">Review and update discipline policies</p>
+                        <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#policyModal">Manage</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x text-danger mb-3"></i>
+                        <h5>Analytics & Reports</h5>
+                        <p class="text-muted">Comprehensive behavior analytics</p>
+                        <a href="{% url 'discipline_analytics' %}" class="btn btn-outline-danger">View Analytics</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modals -->
+<div class="modal fade" id="incidentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Report Incident</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'report_incident' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="studentName" class="form-label">Student Name/ID</label>
+                                <input type="text" class="form-control" id="studentName" name="student" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="incidentType" class="form-label">Incident Type</label>
+                                <select class="form-select" id="incidentType" name="type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="disruptive">Disruptive Behavior</option>
+                                    <option value="uniform">Uniform Violation</option>
+                                    <option value="fighting">Fighting</option>
+                                    <option value="bullying">Bullying</option>
+                                    <option value="property">Property Damage</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="incidentLocation" class="form-label">Location</label>
+                                <select class="form-select" id="incidentLocation" name="location" required>
+                                    <option value="">Select location...</option>
+                                    {% if user_profile.floor %}
+                                    <option value="{{ user_profile.floor.name }}">{{ user_profile.floor.description }}</option>
+                                    {% else %}
+                                    <option value="down">Down Floor</option>
+                                    <option value="middle">Middle Floor</option>
+                                    <option value="top">Top Floor</option>
+                                    {% endif %}
+                                    <option value="classroom">Classroom</option>
+                                    <option value="corridor">Corridor</option>
+                                    <option value="playground">Playground</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="incidentSeverity" class="form-label">Severity Level</label>
+                                <select class="form-select" id="incidentSeverity" name="severity" required>
+                                    <option value="low">Low - Verbal Warning</option>
+                                    <option value="medium" selected>Medium - Written Warning</option>
+                                    <option value="high">High - Parent Contact</option>
+                                    <option value="critical">Critical - Principal Referral</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="incidentDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="incidentDescription" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="witnesses" class="form-label">Witnesses (if any)</label>
+                        <input type="text" class="form-control" id="witnesses" name="witnesses" placeholder="Separate with commas">
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionTaken" class="form-label">Immediate Action Taken</label>
+                        <textarea class="form-control" id="actionTaken" name="action" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="positiveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Positive Behavior</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'record_positive_behavior' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="positiveStudent" class="form-label">Student Name/ID</label>
+                        <input type="text" class="form-control" id="positiveStudent" name="student" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="behaviorType" class="form-label">Positive Behavior</label>
+                        <select class="form-select" id="behaviorType" name="behavior" required>
+                            <option value="">Select behavior...</option>
+                            <option value="helping">Helping Others</option>
+                            <option value="leadership">Leadership</option>
+                            <option value="improvement">Significant Improvement</option>
+                            <option value="kindness">Acts of Kindness</option>
+                            <option value="responsibility">Taking Responsibility</option>
+                            <option value="other">Other Positive Behavior</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="positiveDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="positiveDescription" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="notifyParent" name="notify_parent">
+                        <label class="form-check-label" for="notifyParent">
+                            Notify parent about this positive behavior
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Record Behavior</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // View incident details
+    function viewIncident(incidentId) {
+        alert('Viewing incident #' + incidentId + '\nThis would show detailed incident information.');
+    }
+    
+    // Initialize date/time for forms
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current time for incident report
+        const timeInput = document.createElement('input');
+        timeInput.type = 'hidden';
+        timeInput.name = 'time';
+        timeInput.value = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Add to forms if they exist
+        const forms = ['incidentModal', 'positiveModal', 'lateModal'];
+        forms.forEach(formId => {
+            const form = document.querySelector(`#${formId} form`);
+            if (form) {
+                form.appendChild(timeInput.cloneNode(true));
+            }
+        });
+        
+        // Auto-complete for student names
+        const studentFields = document.querySelectorAll('input[name="student"]');
+        studentFields.forEach(field => {
+            field.addEventListener('input', function() {
+                // This would normally fetch suggestions from server
+                console.log('Searching for student:', this.value);
+            });
+        });
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Auto-dismiss alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script>
+{% endblock %}

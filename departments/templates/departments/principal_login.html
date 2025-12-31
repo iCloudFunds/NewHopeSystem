@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Principal Login{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-container">
+        <h2 class="card-header">Principal Login</h2>
+        
+        {% if form.errors %}
+            <div class="alert alert-error">
+                Please correct the errors below.
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form method="post" class="login-form" style="max-width: 400px; margin: 0 auto;">
+            {% csrf_token %}
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="id_username" style="display: block; margin-bottom: 5px; font-weight: bold;">Username:</label>
+                <input type="text" name="username" id="id_username" required autofocus 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 30px;">
+                <label for="id_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Password:</label>
+                <input type="password" name="password" id="id_password" required 
+                       style="width: 100%; padding: 10px; border: 2px solid var(--thick-blue); border-radius: 4px;">
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 16px;">Login as Principal</button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <p><a href="/">Back to Home</a></p>
+                <p><a href="/login/">Staff Login</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

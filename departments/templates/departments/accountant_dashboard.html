@@ -1,0 +1,565 @@
+{% extends 'departments/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Accountant Dashboard - New Hope System{% endblock %}
+
+{% block page_title %}Accountant Dashboard{% endblock %}
+{% block page_subtitle %}Financial Management & Accounting{% endblock %}
+
+{% block sidebar_nav %}
+<!-- Accountant-specific navigation -->
+<div class="nav-section">
+    <div class="nav-section-title">Financial Management</div>
+    <a href="{% url 'accountant_dashboard' %}" class="nav-item active">
+        <i class="nav-icon fas fa-tachometer-alt"></i>
+        <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="{% url 'fee_management' %}" class="nav-item">
+        <i class="nav-icon fas fa-money-check-alt"></i>
+        <span class="nav-text">Fee Management</span>
+    </a>
+    <a href="{% url 'expense_tracking' %}" class="nav-item">
+        <i class="nav-icon fas fa-receipt"></i>
+        <span class="nav-text">Expense Tracking</span>
+    </a>
+    <a href="{% url 'budget_management' %}" class="nav-item">
+        <i class="nav-icon fas fa-chart-pie"></i>
+        <span class="nav-text">Budget Management</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Payments & Invoices</div>
+    <a href="{% url 'invoice_generation' %}" class="nav-item">
+        <i class="nav-icon fas fa-file-invoice-dollar"></i>
+        <span class="nav-text">Invoice Generation</span>
+    </a>
+    <a href="{% url 'payment_processing' %}" class="nav-item">
+        <i class="nav-icon fas fa-credit-card"></i>
+        <span class="nav-text">Payment Processing</span>
+    </a>
+    <a href="{% url 'receipt_management' %}" class="nav-item">
+        <i class="nav-icon fas fa-file-invoice"></i>
+        <span class="nav-text">Receipt Management</span>
+    </a>
+    <a href="{% url 'bank_reconciliation' %}" class="nav-item">
+        <i class="nav-icon fas fa-university"></i>
+        <span class="nav-text">Bank Reconciliation</span>
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Reports & Analysis</div>
+    <a href="{% url 'financial_reports' %}" class="nav-item">
+        <i class="nav-icon fas fa-chart-line"></i>
+        <span class="nav-text">Financial Reports</span>
+    </a>
+    <a href="{% url 'audit_trails' %}" class="nav-item">
+        <i class="nav-icon fas fa-search-dollar"></i>
+        <span class="nav-text">Audit Trails</span>
+    </a>
+    <a href="{% url 'tax_compliance' %}" class="nav-item">
+        <i class="nav-icon fas fa-balance-scale"></i>
+        <span class="nav-text">Tax Compliance</span>
+    </a>
+    <a href="{% url 'salary_management' %}" class="nav-item">
+        <i class="nav-icon fas fa-money-bill-wave"></i>
+        <span class="nav-text">Salary Management</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Welcome Message -->
+<div class="alert alert-primary mb-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-calculator fa-2x me-3"></i>
+        <div>
+            <h5 class="mb-1">Accountant Dashboard</h5>
+            <p class="mb-0">Welcome, {{ user.username }}! Manage all financial operations from this central dashboard.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Overview -->
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="stat-value">${{ total_revenue|default:"0"|floatformat:2 }}</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-change">
+            {% if revenue_change > 0 %}
+            <i class="fas fa-arrow-up text-success"></i> +{{ revenue_change }}%
+            {% elif revenue_change < 0 %}
+            <i class="fas fa-arrow-down text-danger"></i> {{ revenue_change }}%
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i class="fas fa-receipt"></i>
+        </div>
+        <div class="stat-value">${{ total_expenses|default:"0"|floatformat:2 }}</div>
+        <div class="stat-label">Total Expenses</div>
+        <div class="stat-change">
+            {% if expense_change > 0 %}
+            <i class="fas fa-arrow-up text-danger"></i> +{{ expense_change }}%
+            {% elif expense_change < 0 %}
+            <i class="fas fa-arrow-down text-success"></i> {{ expense_change }}%
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="stat-value">{{ pending_invoices|default:"0" }}</div>
+        <div class="stat-label">Pending Invoices</div>
+        <div class="stat-change">
+            {% if invoice_change > 0 %}
+            <i class="fas fa-plus text-warning"></i> +{{ invoice_change }}
+            {% else %}
+            <i class="fas fa-minus"></i> No changes
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i class="fas fa-percentage"></i>
+        </div>
+        <div class="stat-value">{{ collection_rate|default:"0" }}%</div>
+        <div class="stat-label">Collection Rate</div>
+        <div class="stat-change">
+            {% if collection_change > 0 %}
+            <i class="fas fa-arrow-up text-success"></i> +{{ collection_change }}%
+            {% elif collection_change < 0 %}
+            <i class="fas fa-arrow-down text-danger"></i> {{ collection_change }}%
+            {% else %}
+            <i class="fas fa-minus"></i> No change
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Financial Summary -->
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Financial Summary</h3>
+        <span class="text-light">Current Fiscal Year: {{ fiscal_year }}</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mb-3">Income Breakdown</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Tuition Fees</span>
+                        <span>${{ tuition_fees|default:"0"|floatformat:2 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ tuition_percent|default:"0" }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Examination Fees</span>
+                        <span>${{ exam_fees|default:"0"|floatformat:2 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: {{ exam_percent|default:"0" }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Other Fees</span>
+                        <span>${{ other_fees|default:"0"|floatformat:2 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {{ other_percent|default:"0" }}%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-3">Expense Breakdown</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Salaries</span>
+                        <span>${{ salary_expenses|default:"0"|floatformat:2 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: {{ salary_percent|default:"0" }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Utilities</span>
+                        <span>${{ utility_expenses|default:"0"|floatformat:2 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {{ utility_percent|default:"0" }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Supplies & Maintenance</span>
+                        <span>${{ supply_expenses|default:"0"|floatformat:2 }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: {{ supply_percent|default:"0" }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Net Profit/Loss -->
+        <div class="row mt-4 pt-3 border-top">
+            <div class="col-md-12">
+                <div class="alert alert-{% if net_profit >= 0 %}success{% else %}danger{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="fas fa-{% if net_profit >= 0 %}chart-line{% else %}chart-bar{% endif %} me-2"></i>
+                                Net {% if net_profit >= 0 %}Profit{% else %}Loss{% endif %}
+                            </h5>
+                        </div>
+                        <div class="display-6">${{ net_profit|default:"0"|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions & Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="dashboard-table">
+            <div class="table-header">
+                <h3 class="table-title">Recent Transactions</h3>
+                <a href="{% url 'transaction_history' %}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="table-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction ID</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>
+                                    <small>{{ transaction.date }}</small>
+                                </td>
+                                <td>
+                                    <code>{{ transaction.id }}</code>
+                                </td>
+                                <td>
+                                    <strong>{{ transaction.description }}</strong>
+                                    <br><small class="text-muted">{{ transaction.payer }}</small>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if transaction.type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ transaction.amount|floatformat:2 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if transaction.type == 'income' %}success{% else %}danger{% endif %}">
+                                        {{ transaction.type|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ transaction.status_color }}">{{ transaction.status }}</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-exchange-alt fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No recent transactions</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="dashboard-table">
+            <div class="table-header">
+                <h3 class="table-title">Quick Actions</h3>
+            </div>
+            <div class="table-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                        <i class="fas fa-plus-circle me-2"></i>Record Payment
+                    </button>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#expenseModal">
+                        <i class="fas fa-minus-circle me-2"></i>Record Expense
+                    </button>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#invoiceModal">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Generate Invoice
+                    </button>
+                    <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#refundModal">
+                        <i class="fas fa-undo me-2"></i>Process Refund
+                    </button>
+                </div>
+                
+                <!-- Fee Collection Status -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Fee Collection Status</h6>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Paid</span>
+                            <span>{{ paid_percent|default:"0" }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: {{ paid_percent|default:"0" }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Partial</span>
+                            <span>{{ partial_percent|default:"0" }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: {{ partial_percent|default:"0" }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Unpaid</span>
+                            <span>{{ unpaid_percent|default:"0" }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-danger" style="width: {{ unpaid_percent|default:"0" }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Payments -->
+<div class="dashboard-table mt-4">
+    <div class="table-header">
+        <h3 class="table-title">Upcoming Payments & Deadlines</h3>
+        <span class="text-light">{{ upcoming_count|default:"0" }} items due</span>
+    </div>
+    <div class="table-body p-4">
+        <div class="row">
+            {% for item in upcoming_payments %}
+            <div class="col-md-4 mb-3">
+                <div class="card border-{% if item.priority == 'high' %}danger{% elif item.priority == 'medium' %}warning{% else %}info{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0">{{ item.title }}</h6>
+                            <span class="badge bg-{% if item.priority == 'high' %}danger{% elif item.priority == 'medium' %}warning{% else %}info{% endif %}">
+                                {{ item.days_left }} days
+                            </span>
+                        </div>
+                        <p class="card-text text-muted small">{{ item.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">${{ item.amount|floatformat:2 }}</span>
+                            <button class="btn btn-sm btn-outline-primary" onclick="processPayment('{{ item.id }}')">
+                                Process
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-md-12 text-center py-4">
+                <i class="fas fa-calendar-check fa-2x text-success mb-3"></i>
+                <h5>No Upcoming Payments</h5>
+                <p class="text-muted">All payments are up to date.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'record_payment' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="payerName" class="form-label">Payer Name/ID</label>
+                                <input type="text" class="form-control" id="payerName" name="payer" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="paymentAmount" class="form-label">Amount ($)</label>
+                                <input type="number" class="form-control" id="paymentAmount" name="amount" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="paymentType" class="form-label">Payment Type</label>
+                                <select class="form-select" id="paymentType" name="type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="tuition">Tuition Fee</option>
+                                    <option value="exam">Examination Fee</option>
+                                    <option value="uniform">Uniform Fee</option>
+                                    <option value="other">Other Fee</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Payment Method</label>
+                                <select class="form-select" id="paymentMethod" name="method" required>
+                                    <option value="">Select method...</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="check">Check</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="mobile_money">Mobile Money</option>
+                                    <option value="card">Card</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="paymentReference" class="form-label">Reference Number</label>
+                        <input type="text" class="form-control" id="paymentReference" name="reference">
+                    </div>
+                    <div class="mb-3">
+                        <label for="paymentNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="paymentNotes" name="notes" rows="2"></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="generateReceipt" name="generate_receipt" checked>
+                        <label class="form-check-label" for="generateReceipt">
+                            Generate receipt automatically
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Process payment
+    function processPayment(paymentId) {
+        alert('Processing payment #' + paymentId + '\nThis would open payment processing form.');
+    }
+    
+    // Format currency
+    function formatCurrency(amount) {
+        return '$' + parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format currency displays
+        document.querySelectorAll('.stat-value, .display-6, .fw-bold').forEach(element => {
+            const text = element.textContent;
+            if (text.includes('$')) {
+                // Already formatted
+            } else if (!isNaN(parseFloat(text))) {
+                element.textContent = formatCurrency(text);
+            }
+        });
+        
+        // Generate transaction ID
+        const generateTransactionId = () => {
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 1000);
+            return `TXN-${timestamp}-${random}`;
+        };
+        
+        // Auto-generate reference number for payment form
+        const referenceField = document.getElementById('paymentReference');
+        if (referenceField && !referenceField.value) {
+            referenceField.value = generateTransactionId();
+        }
+        
+        // Currency formatting for input fields
+        const amountFields = document.querySelectorAll('input[type="number"][step="0.01"]');
+        amountFields.forEach(field => {
+            field.addEventListener('blur', function() {
+                if (this.value) {
+                    this.value = parseFloat(this.value).toFixed(2);
+                }
+            });
+        });
+        
+        // Calculate net amount
+        const calculateNet = () => {
+            const revenue = parseFloat({{ total_revenue|default:"0" }}) || 0;
+            const expenses = parseFloat({{ total_expenses|default:"0" }}) || 0;
+            return revenue - expenses;
+        };
+        
+        // Update net profit/loss display
+        const netElement = document.querySelector('.display-6');
+        if (netElement && netElement.textContent.includes('$0.00')) {
+            const net = calculateNet();
+            netElement.textContent = formatCurrency(net);
+            const parentAlert = netElement.closest('.alert');
+            if (parentAlert) {
+                if (net >= 0) {
+                    parentAlert.classList.remove('alert-danger');
+                    parentAlert.classList.add('alert-success');
+                } else {
+                    parentAlert.classList.remove('alert-success');
+                    parentAlert.classList.add('alert-danger');
+                }
+            }
+        }
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Auto-dismiss alerts
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script>
+{% endblock %}

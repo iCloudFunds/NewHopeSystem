@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Portal - New Hope School System</title>
+    <style>
+        :root {
+            --rising-sun: #ff8c00;
+            --void-black: #000000;
+            --dark-surface: #1a1a1a;
+            --text-bright: #ffffff;
+        }
+
+        body {
+            background-color: var(--void-black);
+            color: var(--text-bright);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: var(--dark-surface);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid var(--rising-sun);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--rising-sun);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--rising-sun);
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--void-black);
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: white;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--rising-sun);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--rising-sun);
+            color: black;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: #e67e00;
+            transform: translateY(-2px);
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .messages li {
+            background-color: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <img src="/static/core/images/logo.png" alt="School Logo" class="logo">
+    
+    <h2>Parent Portal</h2>
+    <p>Enter student details to view records</p>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="full_name">STUDENT FULL NAME</label>
+            <input type="text" id="full_name" name="full_name" placeholder="e.g. John Doe" required>
+        </div>
+
+        <div class="form-group">
+            <label for="admission_number">ADMISSION NUMBER</label>
+            <input type="text" id="admission_number" name="admission_number" placeholder="e.g. NHS/2024/001" required>
+        </div>
+
+        <button type="submit" class="btn-login">Access Dashboard</button>
+    </form>
+</div>
+
+</body>
+</html>

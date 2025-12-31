@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}New Hope System - Home{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-container">
+        <h1 class="card-header">Welcome to New Hope System</h1>
+        <p style="text-align: center; margin-bottom: 30px; font-size: 18px;">
+            School Management System
+        </p>
+        
+        <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+            
+            <div class="card" style="width: 250px; text-align: center; border: 2px solid #FF8C00; box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3); background-color: rgba(255, 140, 0, 0.05);">
+                <h3 style="color: #FF8C00; margin-bottom: 15px;">MasterAdmin</h3>
+                <p style="margin-bottom: 20px; font-size: 14px; font-weight: bold;">Full database access and system configuration</p>
+                <a href="/admin/" class="btn" style="width: 80%; background-color: #FF8C00; border: none; color: white; font-weight: bold;">Login as MasterAdmin</a>
+            </div>
+
+            <div class="card" style="width: 250px; text-align: center;">
+                <h3 style="color: var(--rising-sun); margin-bottom: 15px;">Principal Login</h3>
+                <p style="margin-bottom: 20px; font-size: 14px;">Full system access and administration</p>
+                <a href="/principal-login/" class="btn" style="width: 80%;">Login as Principal</a>
+            </div>
+            
+            <div class="card" style="width: 250px; text-align: center;">
+                <h3 style="color: var(--thick-blue); margin-bottom: 15px;">Administrative Staff</h3>
+                <p style="margin-bottom: 20px; font-size: 14px;">Vice Principals, Chiefs of Works, Discipline Masters, Secretary, Accountant</p>
+                <a href="/admin-login/" class="btn btn-primary" style="width: 80%;">Login as Admin Staff</a>
+            </div>
+            
+            <div class="card" style="width: 250px; text-align: center;">
+                <h3 style="color: var(--blue-light); margin-bottom: 15px;">Teaching Staff</h3>
+                <p style="margin-bottom: 20px; font-size: 14px;">Teachers access to assigned classes and marks entry</p>
+                <a href="/teacher-login/" class="btn" style="width: 80%; background-color: var(--blue-light);">Login as Teacher</a>
+            </div>
+            
+            <div class="card" style="width: 250px; text-align: center;">
+                <h3 style="color: var(--rising-sun-dark); margin-bottom: 15px;">Parent/Student Login</h3>
+                <p style="margin-bottom: 20px; font-size: 14px;">Parents and students access to academic records</p>
+                <a href="/other-login/" class="btn" style="width: 80%; background-color: var(--rising-sun-dark);">Login as Parent/Student</a>
+            </div>
+        </div>
+        
+        <div style="margin-top: 40px; padding: 20px; background-color: var(--gray-light); border-radius: 8px;">
+            <h3 style="text-align: center; margin-bottom: 15px;">Quick Access</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="/about/" class="btn" style="background-color: var(--gray-dark);">About Us</a>
+                <a href="/contact/" class="btn" style="background-color: var(--thick-blue);">Contact</a>
+                <a href="/students/" class="btn" style="background-color: var(--rising-sun);">Student Portal</a>
+                <a href="/teachers/" class="btn" style="background-color: var(--blue-light);">Teacher Portal</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+/* --- GLOBAL THEME RESET --- */
+:root {
+    --rising-sun: #ff8c00;
+    --sunlight: #ffcc00;
+    --void-black: #000000;
+    --dark-surface: #1a1a1a;
+    --text-bright: #ffffff;
+}
+
+/* 1. FORCE THEME ON ALL BACKGROUNDS (Including Login & Dashboard) */
+html, body, #container, .login #content, #content-main {
+    background-color: var(--void-black) !important;
+    background: var(--void-black) !important;
+    color: var(--text-bright) !important;
+}
+
+/* 2. FORCE HEADER & NAV (Eliminate Blue) */
+#header, .breadcrumbs, .sticky-wrapper, #branding {
+    background: var(--void-black) !important;
+    background-color: var(--void-black) !important;
+    border-bottom: 3px solid var(--rising-sun) !important;
+}
+
+/* 3. LOGIN BOX FIX */
+.login #content-main {
+    background: var(--dark-surface) !important;
+    border: 2px solid var(--rising-sun) !important;
+    border-radius: 15px;
+}
+
+/* 4. PERMISSION BOXES (Large Font & Compact Height) */
+.selector-available select, .selector-chosen select {
+    height: 380px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    background-color: var(--dark-surface) !important;
+    color: var(--text-bright) !important;
+    border: 2px solid var(--rising-sun) !important;
+}
+
+/* 5. TABLES & LINKS */
+#result_list thead th, .module h2 {
+    background: var(--rising-sun) !important;
+    color: black !important;
+}
+
+a:link, a:visited {
+    color: var(--sunlight) !important;
+}

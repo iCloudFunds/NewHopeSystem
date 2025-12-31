@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>General Department Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to General Department Dashboard</h1>
+    <p>Logged in as: {{ user.username }}</p>
+    <p>Role: {{ profile.role }}</p>
+    <p>Department: {{ profile.department.name }}</p>
+    {% if profile.stream %}
+      <p>Stream: {{ profile.stream.get_name_display }}</p>
+    {% endif %}
+    
+    <h3>General Department Features:</h3>
+    <ul>
+        <li>Student Records</li>
+        <li>Academic Reports</li>
+        <li>Timetable Management</li>
+    </ul>
+    
+    <a href="/logout/">Logout</a>
+</body>
+</html>

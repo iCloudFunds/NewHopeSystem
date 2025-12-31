@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Senior Discipline Master Dashboard{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-container">
+        <h1 class="card-header">Welcome to Senior Discipline Master Dashboard</h1>
+        <p>Logged in as: {{ user.username }}</p>
+        <p>Role: {{ profile.role }}</p>
+        <p>You have access to all floors.</p>
+        
+        <h3>Floor Selection:</h3>
+        <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+            <button class="btn" onclick="selectFloor('down')">Down Floor</button>
+            <button class="btn" onclick="selectFloor('middle')">Middle Floor</button>
+            <button class="btn" onclick="selectFloor('top')">Top Floor</button>
+            <button class="btn" onclick="selectFloor('all')">View All Floors</button>
+        </div>
+        
+        <h3>Senior Discipline Master Features:</h3>
+        <ul>
+            <li>All Floor Discipline Records</li>
+            <li>Cross-Floor Attendance Monitoring</li>
+            <li>Overall Behavior Analysis</li>
+            <li>Manage Discipline Masters</li>
+        </ul>
+        
+        <a href="/logout/" class="btn">Logout</a>
+    </div>
+</div>
+
+<script>
+    function selectFloor(floor) {
+        alert('Selected floor: ' + floor + '. In a real system, this would load data for the selected floor.');
+        // You can implement AJAX to load floor-specific data here
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,409 @@
+:root {
+    --rising-sun: #FF8C00;
+    --rising-sun-light: #FFA726;
+    --rising-sun-dark: #E65100;
+    --thick-blue: #1E3A8A;
+    --blue-light: #3B82F6;
+    --black: #000000;
+    --gray-dark: #1F2937;
+    --gray-light: #F3F4F6;
+    --white: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--black);
+    background-color: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--black) 0%, var(--gray-dark) 100%);
+    border-bottom: 4px solid var(--rising-sun);
+    padding: 15px 30px;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.school-logo {
+    height: 60px;
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
+}
+
+.school-name {
+    color: var(--rising-sun);
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px var(--black);
+}
+
+.contact-header {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: right;
+}
+
+.contact-item {
+    color: var(--gray-light);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* Navigation Styles */
+.main-nav {
+    background: linear-gradient(135deg, var(--thick-blue) 0%, var(--blue-light) 100%);
+    padding: 10px 30px;
+    border-bottom: 3px solid var(--rising-sun);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+    list-style: none;
+}
+
+.nav-links a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 8px 15px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.nav-links a:hover {
+    background-color: var(--rising-sun);
+    color: var(--black);
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.content-container {
+    background-color: var(--gray-light);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--thick-blue);
+}
+
+/* Footer Styles */
+.footer {
+    background: linear-gradient(135deg, var(--black) 0%, var(--gray-dark) 100%);
+    border-top: 4px solid var(--rising-sun);
+    padding: 30px;
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.contact-footer {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.contact-footer-item {
+    color: var(--gray-light);
+    font-size: 16px;
+}
+
+.promotion-message {
+    font-style: italic;
+    color: var(--rising-sun);
+    margin: 15px 0;
+    font-size: 18px;
+}
+
+.company-credit {
+    color: var(--blue-light);
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 20px;
+}
+
+.copyright {
+    color: var(--gray-light);
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+/* Button Styles */
+.btn {
+    background: linear-gradient(135deg, var(--rising-sun) 0%, var(--rising-sun-dark) 100%);
+    color: var(--black);
+    border: 2px solid var(--thick-blue);
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, var(--rising-sun-light) 0%, var(--rising-sun) 100%);
+    border-color: var(--blue-light);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--thick-blue) 0%, var(--blue-light) 100%);
+    color: var(--white);
+    border: 2px solid var(--rising-sun);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--blue-light) 0%, var(--thick-blue) 100%);
+    border-color: var(--rising-sun-light);
+}
+
+/* Card Styles */
+.card {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--thick-blue);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    color: var(--thick-blue);
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--rising-sun);
+}
+
+/* Form Styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--thick-blue);
+    border-radius: 4px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--rising-sun);
+    outline: none;
+    box-shadow: 0 0 5px var(--rising-sun-light);
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+th {
+    background: linear-gradient(135deg, var(--thick-blue) 0%, var(--blue-light) 100%);
+    color: var(--white);
+    padding: 12px;
+    text-align: left;
+    border: 1px solid var(--rising-sun);
+}
+
+td {
+    padding: 10px;
+    border: 1px solid var(--thick-blue);
+    background-color: var(--white);
+}
+
+tr:nth-child(even) td {
+    background-color: var(--gray-light);
+}
+
+/* Alert/Message Styles */
+.alert {
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background-color: #D1FAE5;
+    border-color: #10B981;
+    color: #065F46;
+}
+
+.alert-warning {
+    background-color: #FEF3C7;
+    border-color: #F59E0B;
+    color: #92400E;
+}
+
+.alert-error {
+    background-color: #FEE2E2;
+    border-color: #EF4444;
+    color: #991B1B;
+}
+
+.alert-info {
+    background-color: #DBEAFE;
+    border-color: var(--blue-light);
+    color: var(--thick-blue);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .logo-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .school-logo {
+        height: 50px;
+    }
+    
+    .contact-header {
+        text-align: center;
+    }
+    
+    .contact-item {
+        justify-content: center;
+        font-size: 12px;
+    }
+    
+    .nav-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .nav-links a {
+        display: block;
+        text-align: center;
+    }
+    
+    .contact-footer {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+    
+    .content-container {
+        padding: 20px;
+    }
+    
+    .card-header {
+        font-size: 18px;
+    }
+    
+    .promotion-message {
+        font-size: 16px;
+    }
+    
+    .company-credit {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header,
+    .main-nav,
+    .main-content,
+    .footer {
+        padding: 10px;
+    }
+    
+    .school-name {
+        font-size: 22px;
+    }
+    
+    .contact-item {
+        font-size: 11px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
