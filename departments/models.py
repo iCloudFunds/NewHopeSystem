@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.conf import settings
+
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=10, unique=True)
@@ -49,7 +49,8 @@ class UserProfile(models.Model):
         ('Teacher', 'Teacher'),
     ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Changed User to settings.AUTH_USER_MODEL
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     stream = models.ForeignKey(Stream, on_delete=models.SET_NULL, null=True, blank=True)
@@ -65,8 +66,9 @@ class UserProfile(models.Model):
         return f"{self.user.username} - {self.role}"
 
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    # Changed User to settings.AUTH_USER_MODEL
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
     content = models.TextField(blank=True)
     file = models.FileField(upload_to='chat_uploads/', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -79,7 +81,8 @@ class Message(models.Model):
         return f'{self.sender} to {self.receiver}'
 
 class UserStatus(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='status')
+    # Changed User to settings.AUTH_USER_MODEL
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='status')
     is_online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(auto_now=True)
 
