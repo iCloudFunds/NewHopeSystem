@@ -46,11 +46,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Update this line to match your actual file path
     'backend.middleware.MaintenanceModeMiddleware', 
 ]
 
-ROOT_URLCONF = 'school_management.urls'
+# UPDATED: Changed from 'school_management' to 'backend'
+ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {
@@ -67,8 +67,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'school_management.wsgi.application'
-ASGI_APPLICATION = 'school_management.asgi.application'
+# UPDATED: Changed from 'school_management' to 'backend'
+WSGI_APPLICATION = 'backend.wsgi.application'
+ASGI_APPLICATION = 'backend.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
@@ -101,7 +102,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Pointing to core static folder
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'core/static'),
 ]
