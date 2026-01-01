@@ -1,5 +1,5 @@
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.utils.crypto import get_random_string
 from django.contrib import admin
 from django import forms
@@ -14,7 +14,7 @@ from io import BytesIO
 from django.contrib.auth.hashers import make_password
 import datetime
 
-from .models import Student, Department, Class, Subject, Teacher
+from .models import Student, Department, Class, Subject, Teacher, User
 
 class ImportExcelForm(forms.Form):
     excel_file = forms.FileField(
@@ -1492,9 +1492,6 @@ class TeacherAdmin(admin.ModelAdmin):
         # Save the teacher object
         super().save_model(request, obj, form, change)
 
-
-# Unregister the default User admin
-admin.site.unregister(User)
 
 # Register custom User admin with new actions
 @admin.register(User)

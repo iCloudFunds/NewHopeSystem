@@ -11,11 +11,11 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 from .forms import AdminLoginForm, PrincipalLoginForm, TeacherLoginForm, DepartmentCreationForm, UserCreationForm, ClassCreationForm, UserEditForm, DepartmentEditForm
-from .models import UserProfile, Department, Stream, Floor, Message, UserStatus
+from backend.core.models import Department  # Changed import
+from .models import UserProfile, Stream, Floor, Message, UserStatus  # Removed Department from here
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
-
 def custom_admin_login(request):
     if request.method == 'POST':
         form = AdminLoginForm(request, data=request.POST)

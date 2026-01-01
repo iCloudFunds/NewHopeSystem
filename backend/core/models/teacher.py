@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models import Max
 import datetime
 from .department import Department
@@ -7,7 +7,7 @@ from .subject import Subject
 
 class Teacher(models.Model):
     # Link to Django User for authentication
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='teacher_profile')
     
     # Auto-generated Teacher ID
     teacher_id = models.CharField(max_length=20, unique=True, editable=False, blank=True)

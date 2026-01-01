@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
-import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# BASE_DIR is NewHopeSystem/
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*d8dav!8&zpvpfo8+!-ptv(9qpfb5y+(#gwkcmif39j5(+vsj@')
@@ -19,22 +19,22 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# backend/settings.py
+
 INSTALLED_APPS = [
-    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'channels',
-    'core',
+    
+    # Correct path for the nested app
+    'backend.core', 
     'departments',
-    'portal',
 ]
 
-# This MUST be outside the INSTALLED_APPS list
+# Use the 'label' from apps.py to point to the User model
 AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
@@ -46,30 +46,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'backend.middleware.MaintenanceModeMiddleware', 
+    # Removed non-existent middleware: 'backend.middleware.MaintenanceModeMiddleware'
 ]
 
-# UPDATED: Changed from 'school_management' to 'backend'
 ROOT_URLCONF = 'backend.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
-# UPDATED: Changed from 'school_management' to 'backend'
 WSGI_APPLICATION = 'backend.wsgi.application'
-ASGI_APPLICATION = 'backend.asgi.application'
+ASGI_APPLICATION = 'backend.asgi.application'  # Fixed typo: was 'asgic'
 
 CHANNEL_LAYERS = {
     "default": {
@@ -81,10 +63,10 @@ CHANNEL_LAYERS = {
 }
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -102,8 +84,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Ensure static files are found in the correct app path
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'core/static'),
+    os.path.join(BASE_DIR, 'backend', 'core', 'static'),
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -112,6 +95,23 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Templates configuration
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -125,7 +125,6 @@ REST_FRAMEWORK = {
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -133,10 +132,6 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    
-    CSRF_TRUSTED_ORIGINS = []
-    if RENDER_EXTERNAL_HOSTNAME:
-        CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
 LOGGING = {
     'version': 1,

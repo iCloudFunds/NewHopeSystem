@@ -6,7 +6,7 @@ services:
       pip install -r requirements.txt
       python manage.py migrate
       python manage.py collectstatic --no-input
-    startCommand: daphne school_management.asgi:application --port $PORT --bind 0.0.0.0
+    startCommand: daphne backend.asgi:application --port $PORT --bind 0.0.0.0
     envVars:
       - key: DATABASE_URL
         fromDatabase:

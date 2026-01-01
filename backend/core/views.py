@@ -5,13 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from .models import Student, Teacher, Class, Department, Subject
-
-# Create your views here.
+from backend.core.models import Student, Teacher, Class, Department, Subject
+# --- Public Views ---
 
 class HomeView(TemplateView):
     """Main homepage view"""
-    template_name = 'home.html'
+    template_name = 'core/home.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -19,20 +18,18 @@ class HomeView(TemplateView):
         context['welcome_message'] = 'Welcome to New Hope School Management System'
         return context
 
-
 class AboutView(TemplateView):
     """About page view"""
-    template_name = 'about.html'
+    template_name = 'core/about.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'About Us - New Hope System'
         return context
 
-
 class ContactView(TemplateView):
     """Contact page view"""
-    template_name = 'contact.html'
+    template_name = 'core/contact.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -44,11 +41,12 @@ class ContactView(TemplateView):
         }
         return context
 
+# --- Protected Views (Require Login) ---
 
 @method_decorator(login_required, name='dispatch')
 class DashboardView(TemplateView):
-    """User dashboard view (requires login)"""
-    template_name = 'dashboard.html'
+    """User dashboard view"""
+    template_name = 'core/dashboard.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -56,17 +54,15 @@ class DashboardView(TemplateView):
         context['user'] = self.request.user
         return context
 
-
 class StudentsListView(LoginRequiredMixin, TemplateView):
     """List all students"""
-    template_name = 'students.html'
+    template_name = 'core/students.html'
     login_url = '/admin/login/'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         students = Student.objects.all().order_by('student_id')
         
-        # Add pagination
         paginator = Paginator(students, 20)
         page = self.request.GET.get('page')
         student_list = paginator.get_page(page)
@@ -78,17 +74,15 @@ class StudentsListView(LoginRequiredMixin, TemplateView):
         })
         return context
 
-
 class TeachersListView(LoginRequiredMixin, TemplateView):
     """List all teachers"""
-    template_name = 'teachers.html'
+    template_name = 'core/teachers.html'
     login_url = '/admin/login/'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         teachers = Teacher.objects.all().order_by('teacher_id')
         
-        # Add pagination
         paginator = Paginator(teachers, 20)
         page = self.request.GET.get('page')
         teacher_list = paginator.get_page(page)
@@ -100,35 +94,25 @@ class TeachersListView(LoginRequiredMixin, TemplateView):
         })
         return context
 
-
 class ClassesListView(LoginRequiredMixin, TemplateView):
     """List all classes"""
-    template_name = 'classes.html'
+    template_name = 'core/classes.html'
     login_url = '/admin/login/'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        classes = Class.objects.all().order_by('level', 'name')
-        
-        # Group classes by level
-        classes_by_level = {}
-        for school_class in classes:
-            level = school_class.level
-            if level not in classes_by_level:
-                classes_by_level[level] = []
-            classes_by_level[level].append(school_class)
+        classes = Class.objects.all().order_by('name')
         
         context.update({
             'page_title': 'Classes - New Hope System',
-            'classes_by_level': classes_by_level,
+            'classes': classes,
             'total_classes': classes.count(),
         })
         return context
 
-
 class DepartmentsListView(LoginRequiredMixin, TemplateView):
     """List all departments"""
-    template_name = 'departments.html'
+    template_name = 'core/departments.html'
     login_url = '/admin/login/'
     
     def get_context_data(self, **kwargs):
@@ -142,47 +126,32 @@ class DepartmentsListView(LoginRequiredMixin, TemplateView):
         })
         return context
 
-
 class ReportsView(LoginRequiredMixin, TemplateView):
     """Reports dashboard"""
-    template_name = 'reports.html'
+    template_name = 'core/reports.html'
     login_url = '/admin/login/'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get counts for report cards
-        student_count = Student.objects.count()
-        teacher_count = Teacher.objects.count()
-        class_count = Class.objects.count()
-        department_count = Department.objects.count()
-        subject_count = Subject.objects.count()
-        
-        # Get recent students (last 5)
-        recent_students = Student.objects.all().order_by('-date_of_admission')[:5]
-        
         context.update({
             'page_title': 'Reports & Analytics - New Hope System',
-            'student_count': student_count,
-            'teacher_count': teacher_count,
-            'class_count': class_count,
-            'department_count': department_count,
-            'subject_count': subject_count,
-            'recent_students': recent_students,
+            'student_count': Student.objects.count(),
+            'teacher_count': Teacher.objects.count(),
+            'class_count': Class.objects.count(),
+            'department_count': Department.objects.count(),
+            'subject_count': Subject.objects.count(),
+            'recent_students': Student.objects.all().order_by('-date_of_admission')[:5],
         })
         return context
 
+# --- Utility & Error Views ---
 
 def test_static(request):
-    """Test view to verify static files are working"""
-    return render(request, 'test_static.html')
-
+    return render(request, 'core/test_static.html')
 
 def handler404(request, exception):
-    """Custom 404 error handler"""
     return render(request, '404.html', status=404)
 
-
 def handler500(request):
-    """Custom 500 error handler"""
     return render(request, '500.html', status=500)

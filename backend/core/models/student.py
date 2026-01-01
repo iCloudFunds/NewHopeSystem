@@ -1,34 +1,43 @@
-from django.utils import timezone
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models import Max
 import datetime
 from django.core.exceptions import ValidationError
 
 class Student(models.Model):
-    # Link to admin user (for login/authentication - admin only)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
+    """
+    Student model for the core application.
+    Linked to the custom User model defined in AUTH_USER_MODEL.
+    """
+    # Link to custom user model (core.User)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='student_profile'
+    )
     
-    # Auto-generated Student ID
-    student_id = models.CharField(max_length=20, unique=True, editable=False, blank=True)
+    # Auto-generated Student ID: e.g., NHC-2024-001
+    student_id = models.CharField(
+        max_length=20, 
+        unique=True, 
+        editable=False, 
+        blank=True
+    )
     
     # Student Information
     full_name = models.CharField(max_length=200, verbose_name="FULL NAMES")
     
-    # Date validation: DOB cannot be today
     date_of_birth = models.DateField(
         verbose_name="DATE OF BIRTH",
         help_text="Cannot be today's date"
     )
     
-    # Admission date can be today
     date_of_admission = models.DateField(
         verbose_name="DATE OF ADMISSION",
-        auto_now_add=False,  # We'll set default but allow editing
         default=datetime.date.today
     )
     
-    # Parent/Guardian Information (replaces emergency_contact)
+    # Parent/Guardian Information
     parent_guardian_name = models.CharField(
         max_length=200, 
         verbose_name="Parent/Guardian FULL NAME",
@@ -40,11 +49,21 @@ class Student(models.Model):
         blank=True
     )
     
-    # Other Information
+    # Address
     address = models.TextField(blank=True)
-    current_class = models.ForeignKey('Class', on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
+    
+    # Relationship to Class using string reference to avoid Circular Import/Conflicts
+    current_class = models.ForeignKey(
+        'core.Class', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='students'
+    )
     
     class Meta:
+        # CRITICAL: This tells Django exactly which app this belongs to
+        app_label = 'core'
         ordering = ['student_id']
     
     def clean(self):
@@ -55,25 +74,28 @@ class Student(models.Model):
             })
     
     def save(self, *args, **kwargs):
-        # Generate student ID only if it doesn't exist
+        """Generate student ID and save"""
         if not self.student_id:
             current_year = datetime.date.today().year
             
             # Find the highest sequence number for this year
-            latest_id = Student.objects.filter(
+            # We use self.__class__ to avoid importing Student directly inside its own method
+            latest_id = self.__class__.objects.filter(
                 student_id__startswith=f'NHC-{current_year}-'
             ).aggregate(Max('student_id'))['student_id__max']
             
             if latest_id:
-                # Extract the sequence number and increment it
-                sequence = int(latest_id.split('-')[-1]) + 1
+                try:
+                    # Extract the sequence number from 'NHC-2024-001' and increment
+                    sequence = int(latest_id.split('-')[-1]) + 1
+                except (ValueError, IndexError):
+                    sequence = 1
             else:
                 sequence = 1
             
-            # Format: NHC-2024-001
             self.student_id = f'NHC-{current_year}-{sequence:03d}'
         
-        # Run validation before saving
+        # Run full validation before saving
         self.full_clean()
         super().save(*args, **kwargs)
     

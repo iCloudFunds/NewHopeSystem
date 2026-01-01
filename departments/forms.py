@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
-from .models import Department, Stream, Floor, UserProfile
+from backend.core.models import Department
+from .models import Stream, Floor, UserProfile
 
 # Simple form for Principal login
 class PrincipalLoginForm(AuthenticationForm):
@@ -81,17 +82,19 @@ class AdminLoginForm(AuthenticationForm):
 class DepartmentCreationForm(forms.ModelForm):
     class Meta:
         model = Department
-        fields = ['name', 'code']
+        fields = ['name']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'e.g., General Department', 'class': 'form-control'}),
-            'code': forms.TextInput(attrs={'placeholder': 'e.g., GEN', 'class': 'form-control'}),
+            'name': forms.Select(attrs={'class': 'form-control'}),
         }
 
 # Department edit form
 class DepartmentEditForm(forms.ModelForm):
     class Meta:
         model = Department
-        fields = ['name', 'code']
+        fields = ['name']
+        widgets = {
+            'name': forms.Select(attrs={'class': 'form-control'}),
+        }
 
 # Stream creation form
 class StreamCreationForm(forms.ModelForm):
