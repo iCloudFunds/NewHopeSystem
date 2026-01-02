@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 import random
 import string
 from django.db.models import Q
@@ -1597,8 +1598,7 @@ def custom_logout(request):
 @login_required
 def chat_room(request):
     # Fetch all users except the currently logged-in one
-    users = User.objects.exclude(id=request.user.id).select_related('status', 'userprofile')
-    
+    users = User.objects.exclude(id=request.user.id)
     # Get all messages where the current user is either the sender OR the receiver
     messages = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
